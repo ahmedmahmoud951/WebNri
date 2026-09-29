@@ -41,6 +41,7 @@ import { glassPanel, glowPanel } from '../../app/theme';
 import { useAuth } from '../../core/auth/authContext';
 import { useNavigate } from 'react-router-dom';
 import { DashboardAnalyticsCharts } from './DashboardAnalyticsCharts';
+import { GateTrafficOccupancyChart } from './GateTrafficOccupancyChart';
 
 export function DashboardPage() {
   const theme = useTheme();
@@ -402,48 +403,7 @@ export function DashboardPage() {
           <Grid container spacing={3}>
             {/* Visual Occupancy Timeline & Distribution */}
             <Grid item xs={12}>
-              <Card sx={{ ...glassPanel({}, theme.palette.mode), p: 2.5 }}>
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-                  <Box>
-                    <Typography variant="h6" fontWeight={800}>
-                      معدل الحركة اللحظية والإشغال عبر بوابات الحي
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary">
-                      توزيع المركبات بالدقيقة بين بوابات الشمال، الجنوب، الشرق، وبوابة كبار الشخصيات
-                    </Typography>
-                  </Box>
-                  <Stack direction="row" spacing={1}>
-                    <Chip label="Building A: 85%" size="small" color="primary" />
-                    <Chip label="Building B: 42%" size="small" variant="outlined" />
-                    <Chip label="Building C: 61%" size="small" variant="outlined" />
-                  </Stack>
-                </Stack>
-
-                {/* Simulated Visual Wave / Bar Metric */}
-                <Box sx={{ display: 'flex', alignItems: 'flex-end', height: 140, gap: 1, pt: 2, px: 1 }}>
-                  {[35, 45, 60, 52, 78, 92, 85, 65, 70, 88, 95, 80, 68, 74, 82, 90, 75, 60, 48, 55, 65, 72, 84, 89].map((val, idx) => (
-                    <Box
-                      key={idx}
-                      sx={{
-                        flex: 1,
-                        height: `${val}%`,
-                        bgcolor: val > 80 ? theme.palette.secondary.main : theme.palette.primary.main,
-                        borderRadius: '4px 4px 0 0',
-                        opacity: 0.85,
-                        transition: 'height 400ms ease',
-                        '&:hover': { opacity: 1, transform: 'scaleY(1.05)' },
-                      }}
-                    />
-                  ))}
-                </Box>
-                <Stack direction="row" justifyContent="space-between" sx={{ mt: 1, px: 1 }}>
-                  <Typography variant="caption" color="text.secondary">00:00</Typography>
-                  <Typography variant="caption" color="text.secondary">06:00 (صباحاً)</Typography>
-                  <Typography variant="caption" color="text.secondary">12:00 (ظهراً)</Typography>
-                  <Typography variant="caption" color="text.secondary">18:00 (مساءً - ذروة)</Typography>
-                  <Typography variant="caption" color="text.secondary">الآن</Typography>
-                </Stack>
-              </Card>
+              <GateTrafficOccupancyChart />
             </Grid>
 
             {/* Live Parking Entry & Exit Activity Stream */}

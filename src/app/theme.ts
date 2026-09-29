@@ -28,11 +28,11 @@ const coral = '#FB7185';
 const violet = '#A78BFA';
 const glassBorderDark = 'rgba(255, 255, 255, 0.1)';
 
-/** Light theme tokens */
-const voidBgLight = '#F8FAFC';
+/** Light theme tokens — Frosted Crystal Glass with Sky Blue & Pearl Hue */
+const voidBgLight = '#EEF4F8';
 const inkLight = '#0F172A';
-const mutedLight = '#64748B';
-const glassBorderLight = 'rgba(15, 23, 42, 0.12)';
+const mutedLight = '#475569';
+const glassBorderLight = 'rgba(56, 189, 248, 0.28)';
 
 export const brand = {
   voidBg: voidBgDark,
@@ -56,13 +56,13 @@ export function glassPanel(extra?: Record<string, unknown>, mode: PaletteMode = 
   return {
     background: isDark
       ? `linear-gradient(155deg, ${alpha('#fff', 0.11)} 0%, ${alpha('#fff', 0.035)} 55%, ${alpha(teal, 0.04)} 100%)`
-      : `linear-gradient(155deg, #FFFFFF 0%, #F8FAFC 100%)`,
-    backdropFilter: 'blur(22px) saturate(1.45)',
-    WebkitBackdropFilter: 'blur(22px) saturate(1.45)',
+      : `linear-gradient(155deg, rgba(255, 255, 255, 0.88) 0%, rgba(240, 249, 255, 0.78) 50%, rgba(224, 242, 254, 0.62) 100%)`,
+    backdropFilter: 'blur(22px) saturate(1.6)',
+    WebkitBackdropFilter: 'blur(22px) saturate(1.6)',
     border: `1px solid ${isDark ? glassBorderDark : glassBorderLight}`,
     boxShadow: isDark
       ? `0 0 0 1px ${alpha('#fff', 0.04)}, 0 20px 44px ${alpha('#000', 0.42)}, inset 0 1px 0 ${alpha('#fff', 0.14)}`
-      : `0 4px 20px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04)`,
+      : `0 12px 34px rgba(14, 165, 233, 0.12), 0 2px 6px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.95)`,
     borderRadius: '16px',
     ...extra,
   } as const;
@@ -72,13 +72,13 @@ export function glowPanel(color: string = teal, extra?: Record<string, unknown>,
   const isDark = mode === 'dark';
   return glassPanel(
     {
-      border: `1px solid ${alpha(color, isDark ? 0.42 : 0.3)}`,
+      border: `1px solid ${alpha(color, isDark ? 0.42 : 0.45)}`,
       boxShadow: isDark
         ? `0 0 0 1px ${alpha(color, 0.18)}, 0 0 34px ${alpha(color, 0.16)}, 0 22px 48px ${alpha('#000', 0.42)}, inset 0 1px 0 ${alpha('#fff', 0.14)}`
-        : `0 8px 30px ${alpha(color, 0.12)}, 0 2px 6px rgba(0, 0, 0, 0.04)`,
+        : `0 14px 40px ${alpha(color, 0.2)}, 0 2px 8px rgba(0, 0, 0, 0.04), inset 0 1px 2px rgba(255, 255, 255, 0.95)`,
       background: isDark
         ? `linear-gradient(155deg, ${alpha('#fff', 0.12)} 0%, ${alpha('#fff', 0.03)} 50%, ${alpha(color, 0.06)} 100%)`
-        : `linear-gradient(155deg, #FFFFFF 0%, ${alpha(color, 0.04)} 100%)`,
+        : `linear-gradient(155deg, rgba(255, 255, 255, 0.92) 0%, ${alpha(color, 0.12)} 50%, rgba(240, 249, 255, 0.82) 100%)`,
       ...extra,
     },
     mode,
@@ -88,7 +88,7 @@ export function glowPanel(color: string = teal, extra?: Record<string, unknown>,
 export function createAppTheme(direction: 'ltr' | 'rtl', mode: AppThemeMode = 'dark') {
   const isDark = mode === 'dark';
   const bgDefault = isDark ? voidBgDark : voidBgLight;
-  const bgPaper = isDark ? alpha('#0F172A', 0.72) : '#FFFFFF';
+  const bgPaper = isDark ? alpha('#0F172A', 0.72) : 'rgba(255, 255, 255, 0.82)';
   const textPrimary = isDark ? inkDark : inkLight;
   const textSecondary = isDark ? mutedDark : mutedLight;
   const borderColor = isDark ? glassBorderDark : glassBorderLight;

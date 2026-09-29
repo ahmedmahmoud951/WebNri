@@ -268,16 +268,22 @@ export function AppShell() {
 
           {/* Right Toolbar Actions */}
           <Stack direction="row" spacing={1.25} alignItems="center">
-            {/* Quick Demo Simulator CTA */}
+            {/* Quick Operations Simulator CTA */}
             <Button
               size="small"
               variant="contained"
               color="secondary"
               startIcon={<PlayCircleOutlineIcon />}
-              onClick={() => navigate('/demo-control')}
-              sx={{ fontWeight: 800, display: { xs: 'none', sm: 'inline-flex' } }}
+              onClick={() => navigate('/simulation-suite')}
+              sx={{
+                fontWeight: 800,
+                display: { xs: 'none', sm: 'inline-flex' },
+                background: 'linear-gradient(135deg, #0284C7, #00F0FF)',
+                color: '#080D1A',
+                boxShadow: '0 4px 16px rgba(0, 240, 255, 0.35)',
+              }}
             >
-              Demo Control
+              {!isEn ? 'محاكي العمليات الذكية' : 'Operations Suite'}
             </Button>
 
             {/* Dark / Light Theme Toggle */}
