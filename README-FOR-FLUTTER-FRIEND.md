@@ -1,208 +1,467 @@
-# README — تحديث الباك اند للموبايل
+# دليل التكامل الشامل لتطبيق Flutter — NRI Smart Parking & Toll Management Ecosystem
 
-من: Parking.Api  
-إلى: Flutter (`nri-mobile`)  
-التاريخ: 2026-08-18  
-السيرفر: `http://nri.runasp.net` — **HTTP مش HTTPS**
-
-هذا الملف يلغي الاعتماد على `FINAL-END-POINT2` بالنسبة للوجين وSignalR.  
-العقد الكامل لسه في `FINAL-END-POINT.md`. هنا آخر حاجة اتعملت عشان التطبيق يعدّي.
-
-المصدر الأصلي لهذا التحديث: `README-FOR-FLUTTER-FRIEND Last.md`.
+> **نسخة المطورين الرسمية — End-to-End Client Presentation & FCM Integration**  
+> **تاريخ التحديث:** سبتمبر 2026  
+> **رابط السيرفر السحابي (Cloud API):** `http://nri.runasp.net`  
+> **رابط السيرفر المحلي (Local Dev):** `http://localhost:5088`  
+> **مستودع كود الويب (GitHub Web Repository):** [https://github.com/ahmedmahmoud951/WebNri](https://github.com/ahmedmahmoud951/WebNri)  
+> **تقنية Realtime:** SignalR Core Hub (`/hubs/parking`)  
+> **خدمة الإشعارات (Push Notifications):** Firebase Cloud Messaging (FCM Admin SDK .NET 8)
 
 ---
 
-## هل تعدّلوا حاجة عندكم؟ (ويب + Flutter)
+## 📌 جدول المحتويات
+1. [نظرة عامة والـ Architecture](#1-نظرة-عامة-والـ-architecture)
+2. [المصادقة وحسابات العرض (JWT Authentication)](#2-المصادقة-وحسابات-العرض-jwt-authentication)
+3. [تكامل إشعارات Firebase Cloud Messaging (FCM)](#3-تكامل-إشعارات-firebase-cloud-messaging-fcm)
+4. [واجهات سجل الإشعارات (Notification Center APIs)](#4-واجهات-سجل-الإشعارات-notification-center-apis)
+5. [واجهة اختبار الإشعارات (Demo Notification Endpoint)](#5-واجهة-اختبار-الإشعارات-demo-notification-endpoint)
+6. [الربط اللحظي عبر SignalR Hub](#6-الربط-اللحظي-عبر-signalr-hub)
+7. [خطوات سيناريوهات العرض الكاملة الـ 12 (End-to-End Workflows)](#7-خطوات-سيناريوهات-العرض-الكاملة-الـ-12-end-to-end-workflows)
+8. [زر العرض التقديمي الشامل (Run Full Client Demo)](#8-زر-العرض-التقديمي-الشامل-run-full-client-demo)
+9. [إعادة ضبط النظام (Reset Demo)](#9-إعادة-ضبط-النظام-reset-demo)
+10. [قواعد الأمان والـ Payload Contract](#10-قواعد-الأمان-والـ-payload-contract)
 
-**اللوجين، Occupancy REST، ورابط الـ Hub زي ما هم.** نفس `Authorization: Bearer {accessToken}` على كل المسارات. مفيش توكن تاني لـ `/me`.
+---
 
-بعد ما الـ API الجديد يتنشر على `nri.runasp.net`:
+## 1. نظرة عامة والـ Architecture
 
-1. **شيلوا الـ workaround** اللي بيقرأ البروفايل من JWT payload (`sub` / `role` / `buildingId`).
-2. اعتمدوا **`GET /api/v1/me`** رسمي — نفس التوكن اللي بيشتغل على `/buildings`.
-3. في JSON اسم اليوزر هو **`username`** فقط (مش `userName`). اقروا `data.username`.
-4. **`data.buildingId` رقم `int`** (مش string). ده نفس الرقم لـ `JoinBuilding(buildingId)`.
-5. **`GET /api/v1/parking/sessions/current`**: مفيش جلسة → **404** و `code = NO_CURRENT_SESSION`. ده مش logout. 401 بس لو التوكن مرفوض.
-6. **`POST /api/v1/realtime/demo?buildingId=1`**: ابعتوا body `{}` و `Content-Type: application/json` (من غير body IIS بيرجع 411).
+تم تصميم الباك إند وفق Clean Architecture مع دعم كامل لنسخة العرض التقديمي للعميل (Client Presentation Demo).
+الواجهات التفاعلية لـ Web و Flutter تتصل بالكامل بنفس قاعدة البيانات وبنفس SignalR Hub وتتلقى نفس الأحداث اللحظية بالتوازي.
 
-مسارات `/me` اللي المفروض تبقى 200 بنفس التوكن:
-
-```http
-GET  /api/v1/me
-GET  /api/v1/auth/me
-GET  /api/v1/me/vehicles
-GET  /api/v1/tickets?page=1&pageSize=20
-GET  /api/v1/parking/sessions/current
+```text
+       [Flutter Mobile]                   [React Web Client]
+              │                                   │
+              ├───────────► REST API ◄────────────┤
+              │          (JWT Bearer)             │
+              │                                   │
+              ├──────────► SignalR Hub ◄──────────┤
+              │          (/hubs/parking)          │
+              │                                   │
+              ▲                                   │
+              │                                   ▼
+        [Firebase FCM] ◄────────────── [Backend Notification Service]
+     (Android & iOS Push)                 (SQL Server + SignalR)
 ```
 
-لو `/me` لسه 401 بعد الـ publish: اعملوا login جديد (توكن قديم ممكن يكون اتعمله cache) وابعتوا `correlationId`.
-
-**مش مطلوب:** تغيير مسار اللوجين، HTTPS، Cookie، أو فك التوكن يدويًا.
-
 ---
 
-## 1) اللوجين — الـ 500 اتصلح
+## 2. المصادقة وحسابات العرض (JWT Authentication)
 
-سبب الـ 500 على **كل** العملاء (Flutter / Web / WPF): رد اللوجين كان فيه خاصيتين JSON بنفس الاسم (`username` / `userName`) فالـ API كان بيرمي exception بعد ما الباسورد يتأكد. باسورد غلط كان بيرجع 401 عادي.
+المصادقة بالكامل بواسطة JWT الصادر من الباك إند (ممنوع استخدام Firebase Auth).
 
-بعد الـ publish: نفس الطلب تحت لازم **200** وفيه `data.accessToken` و `data.username` (حقل واحد).
-
+### 2.1 تسجيل الدخول (Login)
 ```http
-POST http://nri.runasp.net/api/v1/auth/login
+POST /api/v1/auth/login
 Content-Type: application/json
+
+{
+  "username": "visitor1",
+  "password": "admin"
+}
 ```
 
+**الحسابات الجاهزة للديمو:**
+| Username | Password | Role | Description |
+|---|---|---|---|
+| `visitor1` | `admin` | `Visitor` | زائر عادي مع مركبة وحجز |
+| `citizen1` | `admin` | `Citizen` | مواطن/مقيم مع محفظة واشتراك رقمي |
+| `employee1` | `admin` | `Employee` | موظف بالمنشأة |
+| `admin1` | `admin` | `Admin` | مدير المبنى الأول (`buildingId = 1`) |
+| `admin` | `admin` | `Admin` | مسؤول النظام الكامل |
+
+### 2.2 الرد (Response):
 ```json
-{"username":"visitor1","password":"admin"}
+{
+  "success": true,
+  "data": {
+    "accessToken": "eyJhbGciOi...",
+    "refreshToken": "d74a...",
+    "username": "visitor1",
+    "role": "Visitor",
+    "buildingId": 1
+  }
+}
 ```
+> **ملاحظة هامة:** احفظ `accessToken` وأرسله في الهيدر لجميع الطلبات اللاحقة:  
+> `Authorization: Bearer <accessToken>`
 
-نفس الجسم لـ:
-
-| username | password | role |
-|---|---|---|
-| `visitor1` | `admin` | Visitor |
-| `citizen1` | `admin` | Citizen |
-| `employee1` | `admin` | Employee |
-| `admin1` | `admin` | Admin (`buildingId = 1`) |
-| `admin` | `admin` | Admin |
-
-اقرأ التوكن من `data.accessToken` (و `data.refreshToken` لو هتعمل refresh).
-
-باسورد غلط → **401** `invalid_credentials` (ده سلوك صحيح).
-
-**ممنوع:** `POST /api/v1/auth/dev-login` على السيرفر الحي (Production هيرجع 404). المسار الوحيد: `/api/v1/auth/login`.
-
-بعد اللوجين:
-
+### 2.3 بيانات المستخدم الحالي:
 ```http
-GET http://nri.runasp.net/api/v1/me
-Authorization: Bearer {accessToken}
+GET /api/v1/me
+Authorization: Bearer <accessToken>
 ```
-
-`buildingId` اللي راجع من `/me` هو نفس الرقم اللي هتبعتوه لـ `JoinBuilding`.
 
 ---
 
-## 2) SignalR — الإشغال والجلسة لايف
+## 3. تكامل إشعارات Firebase Cloud Messaging (FCM)
 
-### اتصال
+الباك إند يحتوي الآن على إدارة كاملة لأجهزة المستخدمين وسجل الإشعارات، ويدعم تسجيل عدة أجهزة للمستخدم الواحد (iPhone + Android + Tablet).
 
-```txt
-Hub URL = http://nri.runasp.net/hubs/parking
-JWT     = accessTokenFactory  +  query access_token
+### 3.1 تسجيل FCM Device Token عند فتح التطبيق
+فور حصول التطبيق على الـ FCM Token من Firebase، أرسل الطلب التالي:
+
+```http
+PUT /api/v1/me/push-token
+Authorization: Bearer <accessToken>
+Content-Type: application/json
+
+{
+  "token": "dKj4f_example_fcm_token_here_...",
+  "platform": "android",
+  "deviceId": "samsung-sm-g998b",
+  "deviceName": "Ahmed Galaxy S24",
+  "appVersion": "1.0.0"
+}
+```
+* **`platform`**: يجب أن تكون إما `"android"` أو `"ios"` (أحرف صغيرة).
+* **`deviceId`**: معرّف الجهاز الفريد (Device ID).
+* **UserId**: يُقرأ تلقائياً من JWT (ممنوع إرساله في الـ Body).
+
+**الرد:**
+```json
+{
+  "success": true
+}
 ```
 
-`Authorization: Bearer` كمان مقبول.
+### 3.2 تحديث الـ Token (Token Refresh)
+عند تشغيل دالة Firebase:
+```dart
+FirebaseMessaging.instance.onTokenRefresh.listen((newToken) {
+  // أعد استدعاء PUT /api/v1/me/push-token بنفس الكود
+});
+```
+الباك إند سيتعرف على الجهاز ويحدّث الـ Token بدون تكرار السجلات في قاعدة البيانات.
 
-بعد الاتصال (الترتيب ده تمام):
+### 3.3 قناة إشعارات أندرويد (Android Notification Channel)
+في ملف `MainActivity.kt` أو عند تهيئة Firebase في Flutter، يجب استخدام القناة التالية حصراً:
+* **Channel ID:** `nri_parking`
+* **Channel Name:** `NRI Smart Parking Notifications`
+* **Importance / Priority:** `High`
+* **Sound:** `default`
 
-```txt
-JoinAllowedGroups()          ← اختياري (السيرفر بيعمل join عند OnConnected)
-JoinBuilding(<buildingId>)   ← int من GET /me  — مثال JoinBuilding(1)
+### 3.4 تسجيل الخروج وتعطيل الإشعارات (Logout)
+عند تسجيل الخروج:
+```http
+POST /api/v1/auth/logout
+Authorization: Bearer <accessToken>
+X-Push-Token: <fcm_token_optional>
+X-Device-Id: <device_id_optional>
+Content-Type: application/json
+
+{
+  "refreshToken": "<refresh_token>"
+}
+```
+يقوم الباك إند بتعطيل جهاز المستخدم الحالي فورياً (`IsActive = false`) لمنع وصول إشعارات المستخدم القديم للجهاز بعد الخروج، مع الحفاظ على السجل للـ Audit.
+
+---
+
+## 4. واجهات سجل الإشعارات (Notification Center APIs)
+
+### 4.1 جلب قائمة الإشعارات
+```http
+GET /api/v1/me/notifications?unreadOnly=false
+Authorization: Bearer <accessToken>
+```
+**الرد:**
+```json
+[
+  {
+    "id": "6a9f73c1-e374-4b52-9c12-78d910111213",
+    "userId": "11111111-1111-1111-1111-000000000001",
+    "type": "payment_captured",
+    "title": "تأكيد عملية الدفع",
+    "body": "تم سداد 25.00 EGP لجلسة الموقف بنجاح.",
+    "entityType": "ParkingSession",
+    "entityId": "4f9d2a3e-781c-4e89-9a1b-123456789abc",
+    "route": "/receipt/4f9d2a3e-781c-4e89-9a1b-123456789abc",
+    "isRead": false,
+    "createdAt": "2026-09-29T16:30:00Z",
+    "readAt": null
+  }
+]
 ```
 
-الاسم الفعلي على الهب: **`JoinBuilding`** (مش `JoinArea` / مش `JoinBuildingAsync`).
-
-لو المبنى مش مسموح أو مش موجود:
-
-```txt
-forbidden: Realtime group is not available.
+### 4.2 عدد الإشعارات غير المقروءة (Badge Count)
+```http
+GET /api/v1/me/notifications/unread-count
+Authorization: Bearer <accessToken>
+```
+**الرد:**
+```json
+{
+  "unreadCount": 3
+}
 ```
 
-الاتصال يفضل مفتوح. الإشغال ساعتها REST بس لحد ما الـ join ينجح.
+### 4.3 تعليم إشعار كمقروء (Mark as Read)
+```http
+POST /api/v1/me/notifications/{id}/read
+Authorization: Bearer <accessToken>
+```
+**الرد:**
+```json
+{
+  "success": true
+}
+```
 
-### الأحداث (PascalCase — object واحد JSON)
+### 4.4 تعليم جميع الإشعارات كمقروءة (Mark All as Read)
+```http
+POST /api/v1/me/notifications/read-all
+Authorization: Bearer <accessToken>
+```
+**الرد:**
+```json
+{
+  "success": true,
+  "markedCount": 3
+}
+```
 
-اسمعوا:
+---
 
-| Event | استخدام |
+## 5. واجهة اختبار الإشعارات (Demo Notification Endpoint)
+
+تسمح هذه الواجهة باختبار دورة الإشعار بالكامل أمام العميل (Database + SignalR + FCM Push):
+
+```http
+POST /api/v1/demo/notifications/test
+Content-Type: application/json
+
+{
+  "type": "payment_captured",
+  "userId": "11111111-1111-1111-1111-000000000001",
+  "sessionId": "4f9d2a3e-781c-4e89-9a1b-123456789abc",
+  "plate": "1004 أ ب ج",
+  "title": "تأكيد سداد الرسوم",
+  "body": "تم خصم 25.00 SAR بنجاح. فترة السماح 15 دقيقة للخروج."
+}
+```
+
+**أنواع الأحداث المعتمدة (Event Types):**
+* `payment_captured`: تأكيد الدفع
+* `grace_expiring`: اقتراب انتهاء فترة السماح
+* `grace_expired`: انتهاء فترة السماح
+* `vehicle_entered`: دخول المركبة
+* `vehicle_exited`: خروج المركبة
+* `reservation_created`: تأكيد الحجز
+* `alarm`: تنبيه أمني أو عطل بوابات
+
+---
+
+## 6. الربط اللحظي عبر SignalR Hub
+
+### 6.1 عنوان الاتصال
+```text
+URL: http://nri.runasp.net/hubs/parking
+Query Param: access_token=<JWT_TOKEN>
+Transport: WebSockets مع Fallback إلى LongPolling
+```
+
+### 6.2 إعداد الاتصال في Flutter (`signalr_netcore`):
+```dart
+final hubConnection = HubConnectionBuilder()
+    .withUrl(
+      'http://nri.runasp.net/hubs/parking',
+      options: HttpConnectionOptions(
+        accessTokenFactory: () async => myJwtToken,
+      ),
+    )
+    .withAutomaticReconnect()
+    .build();
+
+await hubConnection.start();
+```
+
+### 6.3 الأحداث التي يبثها الباك إند (Listen to Events):
+| اسم الحدث (Event) | الغرض |
 |---|---|
-| `OccupancyUpdated` | تحديث `free` / `total` على شاشة الإشغال |
-| `SessionUpdated` | حالة الجلسة / `graceUntil` / `amountDue` |
-| `BarrierOpened` | استماع فقط — الموبايل **مش** بيفتح الحاجز |
-
-مش arguments منفصلة. Payload واحد.
-
-#### OccupancyUpdated
-
-```json
-{
-  "eventId": "evt-001",
-  "occurredAt": "2026-08-18T00:10:00Z",
-  "buildingId": 1,
-  "zoneId": 3,
-  "free": 12,
-  "total": 40
-}
-```
-
-حقول زيادة زي `parkingId` تتجاهلوها.
-
-#### SessionUpdated
-
-```json
-{
-  "eventId": "evt-002",
-  "occurredAt": "2026-08-18T00:11:00Z",
-  "sessionId": 88,
-  "status": "Paid",
-  "plate": "ABC1234",
-  "graceUntil": "2026-08-18T00:26:00Z",
-  "amountDue": 0,
-  "currency": "EGP",
-  "parkingId": 5,
-  "zoneId": 3,
-  "buildingId": 1
-}
-```
-
-`status` المتوقع بعد الدفع: `Paid`. لو مش واضح، اعملوا refresh لـ `GET /api/v1/parking/sessions/current`.
-
-### إجابات صريحة
-
-- `JoinBuilding` بياخد **نفس** `int` بتاع `/me.buildingId` (Area id). مش رقم تاني.
-- `JoinAllowedGroups()` **مش إجباري** قبل `JoinBuilding`. الاتنين مع بعض برضو تمام.
-- أسماء الأحداث: `OccupancyUpdated` / `SessionUpdated` / `BarrierOpened` — PascalCase.
-- الحدث = **JSON object واحد**.
+| `NotificationCreated` | إشعار جديد تم إنشاؤه مع الـ `notificationId` نفسه |
+| `LprDetected` | قراءة كاميرا التعرف على اللوحات LPR |
+| `VehicleEntered` | دخول مركبة وافتتاح جلسة |
+| `VehicleExited` | خروج مركبة واكتمال جلسة |
+| `BarrierStateChanged` | تغير حالة ذراع البوابة (Open / Closed / Fault) |
+| `CameraStateChanged` | حالة الكاميرا (Online / Offline) |
+| `OccupancyChanged` | تحديث عدد المواقف الشاغرة والإشغال |
+| `ReservationCreated` | حجز موقف جديد |
+| `PaymentUpdated` | تأكيد عملية دفع وتحديث الرصيد |
+| `AlarmRaised` | إطلاق إنذار أمني في مركز العمليات |
 
 ---
 
-## 3) حدث تجريبي وأنتم فاتحين التطبيق
+## 7. خطوات سيناريوهات العرض الكاملة الـ 12 (End-to-End Workflows)
 
-بعد Login + connect + `JoinBuilding(1)`:
+كل خطوة مدعومة بـ API حقيقي وقاعدة بيانات SQL وأحداث SignalR و FCM.
+
+### FLOW 1 — LOGIN
+1. يفتح المستخدم شاشة الدخول ويختار `visitor1` / `admin`.
+2. يتم إرسال `POST /api/v1/auth/login`.
+3. يحصل على `accessToken` ويتم تسجيل الجهاز `PUT /api/v1/me/push-token`.
+4. ينتقل التطبيق إلى Dashboard الرئيسي.
+
+### FLOW 2 — RESERVATION (حجز موقف مسبق)
+1. يختار المستخدم المبنى والطابق والموقف المطلوب والتاريخ.
+2. استدعاء `POST /api/v1/reservations`:
+```json
+{
+  "spotId": "33333333-3333-3333-3333-000000000001",
+  "plateNumber": "1004 أ ب ج",
+  "startTime": "2026-09-30T10:00:00Z",
+  "endTime": "2026-09-30T14:00:00Z"
+}
+```
+3. تتغير حالة الحجز إلى `Upcoming`.
+4. يستقبل الويب و Flutter حدث SignalR `ReservationCreated`.
+
+### FLOW 3 — VEHICLE ENTRY (دخول المركبة)
+1. تشغيل المحاكاة عبر `POST /api/v1/demo/scenarios/vehicleentry`.
+2. ترصد الكاميرا اللوحة `1004 أ ب ج` بدقة عالية.
+3. يتم إنشاء `ParkingSession` جديدة في قاعدة البيانات.
+4. يفتح الحاجز الإلكتروني `BarrierStateChanged: Open`.
+5. ينقص عدد المواقف المتاحة بمقدار 1 (`OccupancyChanged`).
+6. يصل إشعار Push للموبايل عبر FCM و SignalR (`NotificationCreated`).
+
+### FLOW 4 — VEHICLE EXIT (خروج المركبة)
+1. تشغيل `POST /api/v1/demo/scenarios/vehicleexit`.
+2. تلتقط كاميرا المخرج اللوحة، وتحسب مدة الوقوف والمبلغ المستحق.
+3. تُغلق الجلسة في SQL، ويفتح حاجز الخروج.
+4. يزيد عدد المواقف الشاغرة بمقدار 1 لحظياً.
+
+### FLOW 5 — GUEST INVITATION (دعوة زائر)
+1. يضغط المقيم على "إنشاء تصريح زائر":
+```http
+POST /api/v1/client/invites
+Authorization: Bearer <accessToken>
+
+{
+  "guestName": "سعود الشمري",
+  "guestPhone": "+966501234567",
+  "plateNumber": "2020 د هـ و",
+  "validHours": 24
+}
+```
+2. يرجع الـ API رابط التصريح ورمز الـ QR:
+   * الرابط العام: `http://nri.runasp.net/invite?code=INV-2026-XXX`
+   * إمكانية المشاركة عبر WhatsApp بضغطة زر.
+
+### FLOW 6 — GUEST ARRIVAL (وصول الضيف)
+1. عند وصول الضيف يتم فحص الـ QR أو قراءة اللوحة:
+```http
+POST /api/v1/demo/scenarios/guestpass
+```
+2. يتحقق النظام من صلاحية التصريح والبوابة المصرح بها.
+3. تفتح البوابة تلقائياً ويتم تسجيل سجل دخول الزائر.
+
+### FLOW 7 — FIND MY CAR (أين سيارتي)
+1. يدخل المستخدم رقم اللوحة (مثلاً `1004 أ ب ج`).
+2. استدعاء API:
+```http
+GET /api/v1/parking/find-car?plate=1004
+Authorization: Bearer <accessToken>
+```
+3. يرجع الرد:
+```json
+{
+  "found": true,
+  "plate": "1004 أ ب ج",
+  "building": "المبنى الشمالي الرئيسي",
+  "floor": "طابق B1",
+  "spotNumber": "B1-A12",
+  "coordinates": { "x": 120, "y": 340 },
+  "navigationPath": [
+    { "x": 0, "y": 0, "name": "مدخل المصاعد الرئيسي" },
+    { "x": 60, "y": 180, "name": "الممر C" },
+    { "x": 120, "y": 340, "name": "الموقف B1-A12" }
+  ]
+}
+```
+4. يعرض التطبيق الخريطة والمسار الإرشادي للموقف.
+
+### FLOW 8 — SUBSCRIPTION (الاشتراكات الشهرية)
+1. يختار المستخدم باقة الاشتراك (باقة الشركات أو السكان).
+2. استدعاء الدفع التجريبي `POST /api/v1/client/subscriptions`.
+3. تفعيل البطاقة الرقمية (Digital Pass) مع رمز QR الحي.
+
+### FLOW 9 — PAYMENT (سداد رسوم الجلسة)
+1. عند استحقاق الفاتورة يختار العميل (Apple Pay / Mada):
+```http
+POST /api/v1/client/payments/intent
+{
+  "sessionId": "4f9d2a3e-781c-4e89-9a1b-123456789abc",
+  "amount": 25.00,
+  "currency": "SAR"
+}
+```
+2. استدعاء `POST /api/v1/client/payments/capture`.
+3. تحديث الفاتورة إلى مدفوعة، وبث حدث `PaymentUpdated` عبر SignalR.
+
+### FLOW 10 — BARRIER ALARM (إنذار عطل الحاجز)
+1. محاكاة عطل الحاجز: `POST /api/v1/demo/scenarios/barrierfailure`.
+2. يصبح الحاجز بحالة `Fault`، ويظهر إنذار أحمر طارئ في الويب والتطبيق.
+3. يضغط المشغل "Acknowledge" ثم "Resolve" لإعادة التشغيل.
+
+### FLOW 11 — CAMERA OFFLINE (انقطاع الكاميرا)
+1. محاكاة انقطاع الكاميرا: `POST /api/v1/demo/scenarios/cameraoffline`.
+2. تتحول حالة الكاميرا إلى `Offline` ويزيد عداد الكاميرات المعطلة في الـ Dashboard.
+
+---
+
+## 8. زر العرض التقديمي الشامل (Run Full Client Demo)
+
+للراحة القصوى أثناء العرض أمام العميل، يمكنك استدعاء السيناريو الآلي الشامل بضغطة زر واحدة:
 
 ```http
-POST http://nri.runasp.net/api/v1/realtime/demo?buildingId=1
-Authorization: Bearer {accessToken}
+POST /api/v1/demo/scenarios/fulldemo
 Content-Type: application/json
 
-{}
+{
+  "plate": "1004 أ ب ج"
+}
 ```
 
-السيرفر ينشر `OccupancyUpdated` و `SessionUpdated` على مجموعة `building:1`.  
-الرد فيه نفس الجسم اللي اتنشر تحت `data.occupancyUpdated` و `data.sessionUpdated`.
-
-ده للاختبار اليدوي. في التشغيل الحقيقي الأحداث بتيجي من تغيير إشغال / دفع جلسة.
-
----
-
-## 4) Checklist سريع
-
-- [ ] HTTP `nri.runasp.net` مش HTTPS
-- [ ] `POST /api/v1/auth/login` → 200 و `data.accessToken`
-- [ ] `GET /api/v1/me` → **200** و `data.username` + `data.buildingId` رقم (مش 401)
-- [ ] اتشال workaround فك JWT؛ البروفايل من `/me`
-- [ ] `GET /api/v1/parking/sessions/current` → 200 أو 404 `NO_CURRENT_SESSION` (مش 401)
-- [ ] Hub `/hubs/parking` بالـ JWT
-- [ ] `JoinBuilding(buildingId)`
-- [ ] `POST /api/v1/realtime/demo?buildingId=1` مع `{}` → الحدثين يوصلوا للشاشة
-
-لو اللوجين لسه 500 أو `/me` لسه 401: الـ API الجديد لسه متعملوش publish على السيرفر. ابعتوا `correlationId` من الرد.
+يقوم الباك إند بتنفيذ تسلسل واقعي كامل مع فواصل زمنية (1.2 إلى 1.5 ثانية بين كل خطوة) لمشاهدة استجابة النظام مباشرة:
+1. تحقق تسجيل الدخول
+2. إنشاء الحجز
+3. وصول المركبة ورصد LPR
+4. رفع الحاجز
+5. بدء جلسة المواقف وتخزينها في SQL
+6. تغيير حالة الموقف وزيادة الإشغال
+7. إرسال إشعار FCM للموبايل والويب
+8. تحديد موقع السيارة في الخريطة
+9. إنشاء تصريح الضيف وعرض الـ QR
+10. وصول الضيف ودخوله
+11. خروج المركبة وفتح حاجز الخروج
+12. سداد الفاتورة وإغلاق الجلسة
+13. إخلاء الموقف وتحديث شاشات المراقبة
 
 ---
 
-## 5) مش مطلوب من الموبايل الأسبوع ده
+## 9. إعادة ضبط النظام (Reset Demo)
 
-- FCM / `PUT /api/v1/me/push-token`
-- فتح حاجز من التطبيق
-- MQTT / Rabbit / SQL
+بعد انتهاء العرض التقديمي للعميل، يمكنك تصفير كافة بيانات المحاكاة وإعادتها لحالتها النظيفة فورياً:
+
+```http
+POST /api/v1/demo/reset
+Content-Type: application/json
+```
+
+يقوم الباك إند بـ:
+* مسح الجلسات المؤقتة وأحداث LPR التجريبية.
+* إعادة الحواجز لحالة `Closed` والكاميرات لـ `Online`.
+* تصفير الإنذارات وإعادة إشغال المواقف للحالة النموذجية الموزونة.
+* بث تحديث فوري لـ `OccupancyChanged` عبر SignalR لتحديث شاشات الموبايل والويب تلقائياً.
+
+---
+
+## 10. قواعد الأمان والـ Payload Contract
+
+1. **معرّفات الكيانات (GUIDs):** جميع معرّفات الجلسات، الحجوزات، والأجهزة هي معرّفات عالمية فريدة `Guid` (مثل `4f9d2a3e-781c-4e89-9a1b-123456789abc`).
+2. **البيانات في إشعار الـ Push:** جميع قيم كائن `data` داخل إشعار Firebase هي نصوص (`string`) لمنع أي تعارض في معالجة الإشعار على أجهزة iOS وأندرويد القديمة.
+3. **أمان البيانات الحساسة:** لا يتم إرسال أرقام بطاقات أو كلمات سر أو بيانات سرية داخل FCM؛ يُرسل فقط المعرف `sessionId` / `notificationId`، ويقوم التطبيق بطلب التفاصيل الكاملة عبر الـ API الموثّق بـ JWT عند النقر على الإشعار.
+4. **عزل فشل الإشعارات:** إخفاق إرسال إشعار Push (بسبب عدم وجود شبكة مثلاً) لا يُعطّل أبداً نجاح عملية الدفع أو فتح البوابة؛ حيث تعمل خدمة الإشعارات بشكل مستقل وغير متزامن في الخلفية.
+
+---
+**بالتوفيق في العرض التقديمي! الكود في الويب متاح على GitHub، والسيرفر جاهز للربط الفوري مع Flutter.**
