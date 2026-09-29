@@ -1,6 +1,7 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import http from 'node:http';
+import https from 'node:https';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { lanCameraProxyPlugin } from './vite-plugins/lanCameraProxy';
@@ -15,12 +16,22 @@ const keepAliveAgent = new http.Agent({
   timeout: 60_000,
 });
 
+const keepAliveHttpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30_000,
+  maxSockets: 30,
+  maxFreeSockets: 10,
+  timeout: 60_000,
+  rejectUnauthorized: false,
+});
+
 function proxyWithLog(target: string) {
+  const isHttps = target.startsWith('https:');
   return {
     target,
     changeOrigin: true,
     secure: false,
-    agent: keepAliveAgent,
+    agent: isHttps ? keepAliveHttpsAgent : keepAliveAgent,
     timeout: 60_000,
     proxyTimeout: 60_000,
     configure: (proxy: { on: (event: string, handler: (...args: unknown[]) => void) => void }) => {
