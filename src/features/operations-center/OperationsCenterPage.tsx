@@ -43,11 +43,15 @@ import {
 import type { BarrierRow, AlarmDto, CameraRow, LprEvent } from '../../core/api/opsTypes';
 import { useAuth } from '../../core/auth/authContext';
 import { formatLocalDateTime } from '../../core/display';
+import { CyberOperationsCockpit } from './CyberOperationsCockpit';
 
 export function OperationsCenterPage() {
   const { i18n } = useTranslation();
   const { hub, api } = useAuth();
   const isRtl = i18n.dir() === 'rtl';
+
+  // Toggle for Cyber Cockpit Panoramic 3D Mode
+  const [cockpitMode, setCockpitMode] = useState<boolean>(true);
 
   // Live Clock
   const [now, setNow] = useState(new Date());
@@ -423,6 +427,27 @@ export function OperationsCenterPage() {
 
           <Button
             variant="contained"
+            onClick={() => setCockpitMode(!cockpitMode)}
+            startIcon={<Typography sx={{ fontSize: 18 }}>{cockpitMode ? '📋' : '🎛️'}</Typography>}
+            sx={{
+              background: cockpitMode
+                ? 'linear-gradient(135deg, #00E5FF 0%, #0284C7 100%)'
+                : 'linear-gradient(135deg, #1e293b 0%, #334155 100%)',
+              fontWeight: 900,
+              color: cockpitMode ? '#081019' : '#38bdf8',
+              border: '1px solid rgba(0, 229, 255, 0.4)',
+              boxShadow: '0 4px 16px rgba(0, 229, 255, 0.3)',
+              borderRadius: 2.5,
+              px: 2.5,
+            }}
+          >
+            {cockpitMode
+              ? (isRtl ? 'عرض الجداول التفصيلية' : 'Show Data Tables')
+              : (isRtl ? 'عرض الكوكتيل البانورامي 3D' : 'Cyber 3D Cockpit')}
+          </Button>
+
+          <Button
+            variant="contained"
             onClick={refetch}
             startIcon={<Typography sx={{ fontSize: 18 }}>🔄</Typography>}
             sx={{
@@ -440,6 +465,13 @@ export function OperationsCenterPage() {
           </Button>
         </Stack>
       </Paper>
+
+      {/* 🌟 CYBER OPERATIONS COCKPIT (EXACT MATCH OF IMAGE SPECIFICATION) */}
+      {cockpitMode && (
+        <Box sx={{ mb: 4 }}>
+          <CyberOperationsCockpit />
+        </Box>
+      )}
 
       {/* 🌟 4 DARK HERO COCKPIT CARDS */}
       <Grid container spacing={2.5} sx={{ mb: 3 }}>
