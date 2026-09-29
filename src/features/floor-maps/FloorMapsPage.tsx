@@ -34,6 +34,7 @@ import ElevatorIcon from '@mui/icons-material/Elevator';
 import ExitToAppIcon from '@mui/icons-material/ExitToApp';
 
 import { smartParkingApi, type BuildingItem, type FloorItem, type FloorMapSpot } from '../../core/api/smartParkingApi';
+import { SaudiPlateBadge } from '../../core/SaudiPlateBadge';
 
 export function FloorMapsPage() {
   const theme = useTheme();
@@ -540,32 +541,24 @@ export function FloorMapsPage() {
 
                     {/* License Plate Display if Occupied */}
                     {spot.currentPlateNumber ? (
-                      <Box
-                        sx={{
-                          my: 0.75,
-                          px: 1,
-                          py: 0.4,
-                          borderRadius: '6px',
-                          bgcolor: 'rgba(255, 255, 255, 0.95)',
-                          color: '#0F172A',
-                          border: '1.5px solid #000',
-                          textAlign: 'center',
-                          boxShadow: '0 2px 6px rgba(0,0,0,0.3)',
-                        }}
-                      >
-                        <Typography
-                          variant="caption"
-                          fontWeight={900}
-                          sx={{
-                            fontFamily: 'monospace',
-                            letterSpacing: 1.5,
-                            fontSize: 11,
-                            direction: 'ltr',
-                            display: 'block',
-                          }}
-                        >
-                          {spot.currentPlateNumber}
-                        </Typography>
+                      <Box sx={{ my: 0.75, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 0.5 }}>
+                        <SaudiPlateBadge plateNumber={spot.currentPlateNumber} size="small" />
+                        {spot.vehicleModel && (
+                          <Typography
+                            variant="caption"
+                            sx={{
+                              color: 'rgba(255, 255, 255, 0.75)',
+                              fontSize: 9.5,
+                              fontWeight: 700,
+                              whiteSpace: 'nowrap',
+                              overflow: 'hidden',
+                              textOverflow: 'ellipsis',
+                              maxWidth: 130,
+                            }}
+                          >
+                            {spot.vehicleModel}
+                          </Typography>
+                        )}
                       </Box>
                     ) : (
                       <Typography
@@ -657,35 +650,41 @@ export function FloorMapsPage() {
                 <Box
                   sx={{
                     p: 2,
-                    borderRadius: '12px',
-                    bgcolor: 'rgba(15, 23, 42, 0.8)',
-                    border: '1px solid rgba(56, 189, 248, 0.25)',
+                    borderRadius: '14px',
+                    bgcolor: 'rgba(15, 23, 42, 0.85)',
+                    border: '1px solid rgba(56, 189, 248, 0.3)',
                   }}
                 >
-                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.5 }}>
+                  <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1 }}>
                     المركبة المتواجدة حالياً (LPR Match):
                   </Typography>
-                  <Box
-                    sx={{
-                      display: 'inline-block',
-                      px: 2,
-                      py: 0.5,
-                      borderRadius: '8px',
-                      bgcolor: '#FFF',
-                      color: '#000',
-                      border: '2px solid #000',
-                      fontWeight: 900,
-                      fontSize: 16,
-                      fontFamily: 'monospace',
-                      letterSpacing: 2,
-                      mb: 1.5,
-                    }}
-                  >
-                    {selectedSpot.currentPlateNumber}
+
+                  <Box sx={{ mb: 1.5 }}>
+                    <SaudiPlateBadge plateNumber={selectedSpot.currentPlateNumber} size="large" />
                   </Box>
+
+                  {selectedSpot.vehicleModel && (
+                    <Stack spacing={0.75} sx={{ mb: 1.5, p: 1.25, borderRadius: '8px', bgcolor: 'rgba(255, 255, 255, 0.04)' }}>
+                      <Stack direction="row" justifyContent="space-between">
+                        <Typography variant="caption" color="text.secondary">طراز المركبة:</Typography>
+                        <Typography variant="caption" fontWeight={800} sx={{ color: '#38BDF8' }}>
+                          {selectedSpot.vehicleModel}
+                        </Typography>
+                      </Stack>
+                      {selectedSpot.vehicleColor && (
+                        <Stack direction="row" justifyContent="space-between">
+                          <Typography variant="caption" color="text.secondary">لون الهيكل:</Typography>
+                          <Typography variant="caption" fontWeight={700}>
+                            {selectedSpot.vehicleColor}
+                          </Typography>
+                        </Stack>
+                      )}
+                    </Stack>
+                  )}
+
                   <Stack direction="row" justifyContent="space-between">
                     <Typography variant="caption" color="text.secondary">
-                      مدة الوقوف: 45 دقيقة
+                      مدة الوقوف: {selectedSpot.parkedDuration || '45 دقيقة'}
                     </Typography>
                     <Typography variant="caption" sx={{ color: '#10B981', fontWeight: 800 }}>
                       الرسوم المتراكمة: 15.00 SAR
