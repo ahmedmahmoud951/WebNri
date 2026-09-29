@@ -481,7 +481,37 @@ export const smartParkingApi = {
       });
       const data = (res as any)?.data || res;
       if (data && (data.spot || data.building)) {
-        return data as FindCarResponse;
+        let directionsList: string[] = [];
+        if (Array.isArray(data.directions)) {
+          directionsList = data.directions;
+        } else if (typeof data.directions === 'string') {
+          directionsList = data.directions.split('.').map((s: string) => s.trim()).filter(Boolean);
+        } else if (Array.isArray(data.navigationPath)) {
+          directionsList = data.navigationPath.map((p: any) => p.instruction || p.step || '').filter(Boolean);
+        }
+
+        if (directionsList.length === 0) {
+          directionsList = [
+            'ادخل من بوابة البهو الرئيسية وتجاوز حاجز الترحيب.',
+            'سر بمحاذاة الرواق الداخلي حتى المصعد المركزي.',
+            'انعطف نحو الممر الداخلي للمواقف.',
+            `سيارتك متوقفة في الخانة المضيئة (${data.spot || 'A-104'}).`,
+          ];
+        }
+
+        return {
+          ...data,
+          plate: data.plate || plate,
+          plateArabic: data.plateArabic || data.plate || plate,
+          plateEnglish: data.plateEnglish || `${data.plate || plate} KSA`,
+          vehicleModel: data.vehicleModel || `${data.make || ''} ${data.model || ''}`.trim() || 'Toyota Camry 2024',
+          vehicleColor: data.vehicleColor || data.color || 'أبيض لؤلؤي',
+          entryTime: data.entryTime || 'منذ ساعة و 24 دقيقة (14:32)',
+          durationParked: data.durationParked || '1 ساعة و 24 دقيقة',
+          accumulatedFee: data.accumulatedFee ?? 15,
+          paymentStatus: data.paymentStatus || 'Subscribed',
+          directions: directionsList,
+        } as FindCarResponse;
       }
     } catch (e) {
       console.warn('API findMyCar fallback for navigation:', e);

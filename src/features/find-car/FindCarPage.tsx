@@ -111,6 +111,21 @@ export function FindCarPage() {
     ? `M 95 440 L 95 240 L ${bayTargetX} 240 L ${bayTargetX} 145`
     : `M 95 440 L 95 240 L ${bayTargetX} 240 L ${bayTargetX} 260`;
 
+  // Safely parse directions whether returned as string, array, or missing
+  const rawDirections = result?.directions;
+  const directionSteps: string[] = Array.isArray(rawDirections)
+    ? rawDirections
+    : typeof rawDirections === 'string'
+    ? (rawDirections as string).split('.').map((s) => s.trim()).filter(Boolean)
+    : Array.isArray((result as any)?.navigationPath)
+    ? (result as any).navigationPath.map((p: any) => p.instruction || p.step || '').filter(Boolean)
+    : [
+        'ادخل من بوابة البهو الرئيسية وتجاوز حاجز الترحيب.',
+        'سر بمحاذاة الرواق الداخلي حتى المصعد المركزي.',
+        'انعطف نحو الممر الداخلي للمواقف.',
+        `سيارتك متوقفة في الخانة المضيئة (${result?.spot || 'A-104'}).`,
+      ];
+
   return (
     <Box sx={{ pb: 6 }}>
       {/* Laser Animation Styles & Radiant Glows */}
@@ -1028,14 +1043,14 @@ export function FindCarPage() {
                 </Typography>
 
                 <Stepper orientation="vertical">
-                  {result.directions?.map((stepText, idx) => (
-                    <Step key={idx} active completed={idx < result.directions.length - 1}>
+                  {directionSteps.map((stepText, idx) => (
+                    <Step key={idx} active completed={idx < directionSteps.length - 1}>
                       <StepLabel>
                         <Typography
                           variant="body2"
-                          fontWeight={idx === result.directions.length - 1 ? 900 : 700}
+                          fontWeight={idx === directionSteps.length - 1 ? 900 : 700}
                           sx={{
-                            color: idx === result.directions.length - 1 ? '#00F0FF' : 'text.primary',
+                            color: idx === directionSteps.length - 1 ? '#00F0FF' : 'text.primary',
                           }}
                         >
                           {stepText}
