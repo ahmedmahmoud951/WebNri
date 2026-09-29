@@ -40,6 +40,7 @@ import { smartParkingApi, type DashboardSummary, type LiveOperations } from '../
 import { glassPanel, glowPanel } from '../../app/theme';
 import { useAuth } from '../../core/auth/authContext';
 import { useNavigate } from 'react-router-dom';
+import { DashboardAnalyticsCharts } from './DashboardAnalyticsCharts';
 
 export function DashboardPage() {
   const theme = useTheme();
@@ -223,10 +224,10 @@ export function DashboardPage() {
             variant="contained"
             color="primary"
             startIcon={<PlayArrowIcon />}
-            onClick={() => navigate('/demo-control')}
+            onClick={() => navigate('/simulation-suite')}
             sx={{ fontWeight: 800 }}
           >
-            لوحة محاكاة الـ Demo
+            مركز العمليات والمحاكاة الذكية
           </Button>
         </Stack>
       </Stack>
@@ -383,6 +384,16 @@ export function DashboardPage() {
           </Card>
         </Grid>
       </Grid>
+
+      {/* RICH VISUAL ANALYTICS: Hourly Flow Spline, Capacity Gauge, Saudi Payment Donut & Barrier Bar */}
+      <DashboardAnalyticsCharts
+        totalCapacity={s.totalCapacity}
+        occupied={s.occupied}
+        available={s.available}
+        occupancyPercentage={s.occupancyPercentage}
+        todayEntries={s.todayEntries}
+        todayExits={s.todayExits}
+      />
 
       {/* MIDDLE: Charts & Live Parking Activity + RIGHT: System Health */}
       <Grid container spacing={3} sx={{ mb: 3 }}>

@@ -283,7 +283,7 @@ export function LoginPage() {
         </Box>
 
         <Typography variant="caption" color="text.secondary">
-          NRI Enterprise Smart Parking Ecosystem • v2.0 Production Demo
+          NRI Enterprise Smart Parking Ecosystem • v2.0 Enterprise Suite
         </Typography>
       </Box>
 
@@ -307,10 +307,10 @@ export function LoginPage() {
             {t('auth.portalHint')}
           </Typography>
 
-          {/* Demo Account Quick Selector */}
+          {/* Quick Account Selector */}
           <Box sx={{ mb: 3 }}>
             <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 1, fontWeight: 700 }}>
-              اختر حساب تجريبي سريع (Demo Accounts):
+              الدخول السريع بحسابات النظام التشغيلي (Quick Role Access):
             </Typography>
             <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
               {DEMO_ACCOUNTS.map((acc) => {

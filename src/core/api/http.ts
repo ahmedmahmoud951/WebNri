@@ -102,7 +102,11 @@ export interface HttpApiDeps {
 
 function liveOrLocal(error: unknown): boolean {
   if (isEmptyBusinessError(error)) return false;
-  return isUnimplementedRoute(error) || (error instanceof ApiError && error.statusCode === 404);
+  if (isUnimplementedRoute(error)) return true;
+  if (error instanceof ApiError) {
+    return error.statusCode === 404 || error.statusCode === 500 || error.statusCode === 502 || error.statusCode === 503;
+  }
+  return false;
 }
 
 function toApiError(error: AxiosError): ApiError {

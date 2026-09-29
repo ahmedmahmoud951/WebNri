@@ -41,6 +41,7 @@ import { RolesPage } from '../features/roles/RolesPage';
 import { AuditLogsPage } from '../features/audit-logs/AuditLogsPage';
 import { SystemHealthPage } from '../features/system-health/SystemHealthPage';
 import { DemoControlPage } from '../features/demo-control/DemoControlPage';
+import { SaudiPaymentsPage } from '../features/saudi-payments/SaudiPaymentsPage';
 
 // Legacy compatibility
 import { ReceiptsPage } from '../features/receipts/ReceiptsPage';
@@ -111,6 +112,8 @@ export const router = createBrowserRouter([
           { path: '/guest-invites', element: <GuestInvitesPage /> },
           { path: '/wallet', element: <WalletPage /> },
           { path: '/payments', element: <PaymentsPage /> },
+          { path: '/saudi-payments', element: <SaudiPaymentsPage /> },
+          { path: '/admin/saudi-payments', element: <SaudiPaymentsPage /> },
           { path: '/pay', element: <PaymentsPage /> },
           { path: '/invoices', element: <InvoicesPage /> },
           { path: '/billing', element: <InvoicesPage /> },
@@ -143,6 +146,7 @@ export const router = createBrowserRouter([
           { path: '/roles', element: <RolesPage /> },
           { path: '/audit-logs', element: <AuditLogsPage /> },
           { path: '/system-health', element: <SystemHealthPage /> },
+          { path: '/simulation-suite', element: <DemoControlPage /> },
           { path: '/demo-control', element: <DemoControlPage /> },
           { path: '/admin/simulator', element: <DemoControlPage /> },
 

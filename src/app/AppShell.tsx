@@ -117,6 +117,7 @@ export function AppShell() {
         id: 'finance',
         title: isEn ? 'FINANCE & BILLING' : '💳 المالية والمدفوعات',
         items: [
+          { to: '/saudi-payments', labelAr: 'بوابات الدفع والبنوك السعودية', labelEn: 'Saudi Payments & Banks', icon: <PaymentIcon />, highlight: true },
           { to: '/wallet', labelAr: 'المحفظة الرقمية', labelEn: 'Digital Wallet', icon: <AccountBalanceWalletIcon /> },
           { to: '/payments', labelAr: 'سجل المدفوعات', labelEn: 'Payments Center', icon: <PaymentIcon /> },
           { to: '/invoices', labelAr: 'الفواتير الضريبية', labelEn: 'Tax Invoices', icon: <ReceiptIcon /> },
@@ -131,7 +132,7 @@ export function AppShell() {
           { to: '/gates', labelAr: 'البوابات الذكية', labelEn: 'Smart Gates', icon: <MeetingRoomIcon /> },
           { to: '/lpr', labelAr: 'محرك التعرف LPR', labelEn: 'LPR Recognition Hub', icon: <CameraAltIcon /> },
           { to: '/system-health', labelAr: 'تشخيص وصحة النظام', labelEn: 'System Health', icon: <HealthAndSafetyIcon /> },
-          { to: '/demo-control', labelAr: 'مركز محاكي الـ Demo', labelEn: 'Demo Control Center', icon: <PlayCircleOutlineIcon />, highlight: true },
+          { to: '/simulation-suite', labelAr: 'مركز العمليات والمحاكاة الذكية', labelEn: 'Operations & Simulation Suite', icon: <PlayCircleOutlineIcon />, highlight: true },
         ],
       },
       {

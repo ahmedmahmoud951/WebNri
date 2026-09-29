@@ -50,7 +50,7 @@ export function WalletPage() {
       {
         id: 'tx-' + Date.now(),
         type: 'Credit',
-        title: 'شحن رصيد إلكتروني فوري (Demo Top-up)',
+        title: 'شحن رصيد إلكتروني فوري للمحفظة',
         amount: amt,
         date: 'الآن',
         status: 'Succeeded',
@@ -177,7 +177,7 @@ export function WalletPage() {
         fullWidth
         PaperProps={{ sx: { ...glassPanel({}, theme.palette.mode), p: 1.5 } }}
       >
-        <DialogTitle sx={{ fontWeight: 800 }}>شحن رصيد المحفظة (Demo Top-up)</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 800 }}>شحن رصيد المحفظة الإلكترونية</DialogTitle>
         <DialogContent dividers>
           <Stack spacing={2.5} sx={{ mt: 1 }}>
             <Typography variant="body2" color="text.secondary">

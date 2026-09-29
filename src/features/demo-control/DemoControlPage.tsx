@@ -163,10 +163,10 @@ export function DemoControlPage() {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight={800}>
-          مركز التحكم في محاكي الـ Demo (Demo Control Center)
+          مركز العمليات والمحاكاة الذكية للنظام (Smart Operations & Simulation Suite)
         </Typography>
         <Typography variant="body2" color="text.secondary">
-          شاشة القيادة المخصصة للعرض التقديمي للعميل — قم بتشغيل السيناريوهات لمشاهدة استجابة النظام والشاشات لحظياً
+          شاشة القيادة المخصصة للمحاكاة والعمليات الميدانية — قم بتشغيل السيناريوهات لمشاهدة استجابة النظام والشاشات لحظياً
         </Typography>
       </Box>
 
@@ -227,7 +227,7 @@ export function DemoControlPage() {
               onClick={handleResetDemo}
               sx={{ fontWeight: 800 }}
             >
-              إعادة ضبط الـ Demo (Reset)
+              إعادة تهيئة البيانات التشغيلية (Reset Baseline)
             </Button>
           </Stack>
         </Stack>
@@ -248,12 +248,12 @@ export function DemoControlPage() {
           <Box>
             <Stack direction="row" spacing={1.5} alignItems="center">
               <Typography variant="h5" fontWeight={900} sx={{ color: '#F59E0B' }}>
-                🚀 العرض التقديمي الكامل (Run Full Client Demo)
+                🚀 تشغيل سيناريو المحاكاة الشامل لمنظومة المواقف (Full Ecosystem Simulation)
               </Typography>
               <Chip label="18-STEP END-TO-END" color="warning" size="small" sx={{ fontWeight: 800 }} />
             </Stack>
             <Typography variant="body2" color="text.secondary" sx={{ mt: 1, maxWidth: 800 }}>
-              ينفذ تسلسلاً شاملاً وواقعياً أمام العميل بفترات زمنية دقيقة: تسجيل الدخول ← إنشاء الحجز ← وصول المركبة ← قراءة LPR ← فتح الحاجز ← بدء الجلسة والتسجيل في SQL ← إشغال الموقف ← إشعار Push عبر SignalR و FCM ← استعلام أين سيارتي ← دعوة زائر وتوليد رمز QR ← وصول الضيف ← خروج المركبة ← سداد الفاتورة ← إغلاق الجلسة وإخلاء الموقف وتحديث لوحة المراقبة لحظياً.
+              ينفذ تسلسلاً شاملاً وواقعياً أمام الحضور بفترات زمنية دقيقة: تسجيل الدخول ← إنشاء الحجز ← وصول المركبة ← قراءة LPR ← فتح الحاجز ← بدء الجلسة والتسجيل في SQL ← إشغال الموقف ← إشعار Push عبر SignalR و FCM ← استعلام أين سيارتي ← دعوة زائر وتوليد رمز QR ← وصول الضيف ← خروج المركبة ← سداد الفاتورة ← إغلاق الجلسة وإخلاء الموقف وتحديث لوحة المراقبة لحظياً.
             </Typography>
           </Box>
           <Button
@@ -262,7 +262,7 @@ export function DemoControlPage() {
             size="large"
             disabled={runningScenario !== null}
             startIcon={runningScenario === 'fulldemo' ? <CircularProgress size={20} color="inherit" /> : <PlayArrowIcon />}
-            onClick={() => executeScenario('fulldemo', 'العرض التقديمي الكامل (Full Client Demo)')}
+            onClick={() => executeScenario('fulldemo', 'المحاكاة الشاملة للنظام (Full Ecosystem Simulation)')}
             sx={{
               fontWeight: 900,
               fontSize: '1.05rem',
@@ -272,7 +272,7 @@ export function DemoControlPage() {
               boxShadow: '0 4px 20px rgba(245, 158, 11, 0.4)',
             }}
           >
-            {runningScenario === 'fulldemo' ? 'جاري تنفيذ العرض الكامل...' : 'تشغيل العرض الكامل للعميل'}
+            {runningScenario === 'fulldemo' ? 'جاري تنفيذ المحاكاة الشاملة...' : 'تشغيل المحاكاة الشاملة للنظام'}
           </Button>
         </Stack>
       </Card>
@@ -349,7 +349,7 @@ export function DemoControlPage() {
       {/* Realtime Event Log Box */}
       <Card sx={{ ...glassPanel({}, theme.palette.mode), p: 2.5 }}>
         <Typography variant="h6" fontWeight={800} sx={{ mb: 2 }}>
-          سجل أحداث المحاكاة المباشر (Demo Event Log Stream)
+          سجل أحداث العمليات والمحاكاة المباشر (Live Event Log Stream)
         </Typography>
 
         <Box sx={{ bgcolor: alpha('#000', 0.35), p: 2, borderRadius: '12px', minHeight: 120 }}>

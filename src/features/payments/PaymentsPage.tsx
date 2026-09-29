@@ -130,7 +130,7 @@ export function PaymentsPage() {
           onClick={() => setOpenSimulate(true)}
           sx={{ fontWeight: 800, px: 3 }}
         >
-          محاكاة عملية دفع (Demo Payment)
+          تنفيذ عملية سداد إلكتروني مباشر
         </Button>
       </Stack>
 
