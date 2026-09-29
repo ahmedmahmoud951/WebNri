@@ -61,7 +61,11 @@ function proxyWithLog(target: string) {
       });
       proxy.on('error', (err, req) => {
         const request = req as { url?: string };
-        console.error(`\x1b[31m[API Proxy Error]\x1b[0m ${request.url}`, err);
+        const errCode = (err as any)?.code;
+        if (errCode === 'ECONNRESET' || errCode === 'EPIPE' || errCode === 'ECANCELED') {
+          return;
+        }
+        console.warn(`\x1b[33m[API Proxy Notice]\x1b[0m ${request.url || ''} - ${errCode || (err as Error)?.message || 'Request reset'}`);
       });
     },
   };
