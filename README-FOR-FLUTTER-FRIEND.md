@@ -1,11 +1,11 @@
 # دليل التكامل الشامل لتطبيق Flutter — NRI Smart Parking & Toll Management Ecosystem
 
 > **نسخة المطورين الرسمية — End-to-End Client Presentation & FCM Integration**  
-> **تاريخ التحديث:** سبتمبر 2026  
-> **رابط السيرفر السحابي (Cloud API):** `http://nri.runasp.net`  
+> **رابط السيرفر السحابي (Cloud API):** `https://nri.runasp.net`  
+> **رابط SignalR Hub في السيرفر السحابي:** `http://nri.runasp.net/hubs/parking`  
 > **رابط السيرفر المحلي (Local Dev):** `http://localhost:5088`  
 > **مستودع كود الويب (GitHub Web Repository):** [https://github.com/ahmedmahmoud951/WebNri](https://github.com/ahmedmahmoud951/WebNri)  
-> **تقنية Realtime:** SignalR Core Hub (`/hubs/parking`)  
+> **اتصال قاعدة البيانات:** `Server=db64137.public.databaseasp.net; Database=db64137; User Id=db64137; Encrypt=True; TrustServerCertificate=True;`  
 > **خدمة الإشعارات (Push Notifications):** Firebase Cloud Messaging (FCM Admin SDK .NET 8)
 
 ---
