@@ -5,8 +5,6 @@ import {
   Stack,
   Button,
   Chip,
-  IconButton,
-  Tooltip,
 } from '@mui/material';
 import { SaudiPlateBadge } from '../../core/SaudiPlateBadge';
 
@@ -20,6 +18,7 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
   const [selectedSlot, setSelectedSlot] = useState<string | null>('A-104');
   const [currentTime, setCurrentTime] = useState<string>('20:40:15');
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Live Clock
   useEffect(() => {
@@ -38,7 +37,6 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
       for (let c = 1; c <= 8; c++) {
         const id = `${prefix}-${r * 100 + c}`;
         const isEv = r === 1 && c <= 3;
-        // Deterministic pseudo-random status
         const isOccupied = !isEv && ((r + c) % 3 === 0 || (r * c) % 5 === 0);
         list.push({
           id,
@@ -54,15 +52,31 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
     return list;
   }, [activeFloor]);
 
-  // 3D Canvas Isometric Animation
+  // Responsive Dynamic Canvas Sizing & Isometric Rendering
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas) return;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animId: number;
-    let angle = 0;
+
+    const updateSize = () => {
+      const rect = container.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      canvas.width = Math.max(300, rect.width * dpr);
+      canvas.height = Math.max(280, rect.height * dpr);
+    };
+
+    updateSize();
+
+    // ResizeObserver ensures crisp rendering on mobile rotate, window resize, or tablet split-screen
+    const resizeObserver = new ResizeObserver(() => {
+      updateSize();
+    });
+    resizeObserver.observe(container);
 
     const render = () => {
       const w = canvas.width;
@@ -70,7 +84,7 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
       ctx.clearRect(0, 0, w, h);
 
       // Gradient background
-      const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 50, w / 2, h / 2, w / 1.5);
+      const bgGrad = ctx.createRadialGradient(w / 2, h / 2, 50, w / 2, h / 2, w / 1.4);
       bgGrad.addColorStop(0, '#0c1524');
       bgGrad.addColorStop(1, '#050911');
       ctx.fillStyle = bgGrad;
@@ -79,7 +93,7 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
       // Grid lines
       ctx.strokeStyle = 'rgba(0, 229, 255, 0.04)';
       ctx.lineWidth = 1;
-      const step = 32;
+      const step = 28;
       for (let x = 0; x < w; x += step) {
         ctx.beginPath();
         ctx.moveTo(x, 0);
@@ -93,21 +107,28 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
         ctx.stroke();
       }
 
-      // Draw 3D Isometric Compound Building at Left
-      const bX = w * 0.32;
-      const bY = h * 0.48;
+      // Responsive positioning for Mobile (< 650px) vs Tablet/Desktop
+      const isMobile = w < 720;
+      const scale = Math.min(1.25, Math.max(0.48, w / 820));
 
-      // Base footprint
+      const bX = isMobile ? w * 0.48 : w * 0.32;
+      const bY = isMobile ? h * 0.32 : h * 0.48;
+
+      const pX = isMobile ? w * 0.48 : w * 0.68;
+      const pY = isMobile ? h * 0.72 : h * 0.38;
+
+      // Draw 3D Isometric Compound Building
       ctx.save();
       ctx.translate(bX, bY);
+      ctx.scale(scale, scale);
 
       // Building Shadows
       ctx.fillStyle = 'rgba(0, 0, 0, 0.65)';
       ctx.beginPath();
-      ctx.ellipse(0, 110, 220, 70, 0, 0, Math.PI * 2);
+      ctx.ellipse(0, 110, 210, 65, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Building Blocks
+      // Building Blocks Helper
       const drawBlock = (x: number, y: number, bw: number, bh: number, depth: number, colTop: string, colLeft: string, colRight: string) => {
         // Left Face
         ctx.fillStyle = colLeft;
@@ -146,31 +167,29 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
         ctx.stroke();
       };
 
-      // Main Compound Wings
-      drawBlock(-60, 40, 160, 80, 130, '#1c2838', '#141d2a', '#182333');
-      drawBlock(60, 10, 130, 70, 110, '#223246', '#172230', '#1c293a');
-      drawBlock(0, -30, 180, 90, 160, '#26374d', '#1a2636', '#202f43');
+      // Compound Structure
+      drawBlock(-55, 35, 150, 75, 120, '#1c2838', '#141d2a', '#182333');
+      drawBlock(55, 10, 120, 65, 100, '#223246', '#172230', '#1c293a');
+      drawBlock(0, -25, 170, 85, 150, '#26374d', '#1a2636', '#202f43');
 
       // Windows Matrix glow
       ctx.fillStyle = 'rgba(255, 235, 150, 0.45)';
       for (let f = 1; f <= 5; f++) {
         for (let c = 1; c <= 7; c++) {
-          ctx.fillRect(-85 + c * 18, 5 - f * 20, 7, 10);
+          ctx.fillRect(-78 + c * 17, 5 - f * 19, 6, 9);
         }
       }
 
       ctx.restore();
 
-      // Draw Parking Lots Matrix at Right
-      const pX = w * 0.68;
-      const pY = h * 0.38;
-
+      // Draw Parking Lots Matrix
       ctx.save();
       ctx.translate(pX, pY);
+      ctx.scale(scale, scale);
 
-      // Multi-floor deck base
+      // Deck base
       ctx.fillStyle = '#0f1722';
-      ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)';
+      ctx.strokeStyle = 'rgba(0, 229, 255, 0.35)';
       ctx.lineWidth = 1.5;
 
       ctx.beginPath();
@@ -202,7 +221,6 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
 
         const isSel = s.id === selectedSlot;
 
-        // Slot polygon
         ctx.fillStyle = isSel ? '#ffffff' : color;
         ctx.shadowColor = glow;
         ctx.shadowBlur = isSel ? 16 : 8;
@@ -219,7 +237,6 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
 
       ctx.restore();
 
-      angle += 0.01;
       animId = requestAnimationFrame(render);
     };
 
@@ -227,6 +244,7 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
 
     return () => {
       cancelAnimationFrame(animId);
+      resizeObserver.disconnect();
     };
   }, [slots, selectedSlot]);
 
@@ -236,32 +254,33 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
         width: '100%',
         bgcolor: '#070C12',
         color: '#E2E8F0',
-        p: { xs: 1.5, sm: 2.5 },
+        p: { xs: 1.25, sm: 2, md: 2.5 },
         direction: 'rtl',
         fontFamily: 'Tajawal, Cairo, sans-serif',
-        borderRadius: 4,
+        borderRadius: { xs: 2.5, sm: 3.5, md: 4 },
         overflow: 'hidden',
         border: '1px solid rgba(0, 229, 255, 0.15)',
         boxShadow: '0 20px 50px rgba(0, 0, 0, 0.8)',
       }}
     >
-      {/* 🚀 TOP BAR: BRANDING + TIME */}
+      {/* 🚀 TOP BAR: BRANDING + TIME (RESPONSIVE WRAP) */}
       <Stack
-        direction="row"
+        direction={{ xs: 'column', sm: 'row' }}
         justifyContent="space-between"
-        alignItems="center"
+        alignItems={{ xs: 'flex-start', sm: 'center' }}
+        spacing={{ xs: 1.5, sm: 2 }}
         sx={{
           mb: 2.5,
           pb: 1.5,
           borderBottom: '1px solid rgba(255, 255, 255, 0.07)',
         }}
       >
-        <Stack direction="row" spacing={2} alignItems="center">
+        <Stack direction="row" spacing={1.5} alignItems="center">
           <Box
             sx={{
-              width: 44,
-              height: 44,
-              borderRadius: 2.5,
+              width: { xs: 36, sm: 44 },
+              height: { xs: 36, sm: 44 },
+              borderRadius: 2,
               bgcolor: 'rgba(0, 229, 255, 0.1)',
               border: '1.5px solid #00E5FF',
               display: 'grid',
@@ -269,45 +288,45 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
               boxShadow: '0 0 15px rgba(0, 229, 255, 0.3)',
             }}
           >
-            <Typography sx={{ fontWeight: 900, color: '#00E5FF', fontSize: 20 }}>L</Typography>
+            <Typography sx={{ fontWeight: 900, color: '#00E5FF', fontSize: { xs: 16, sm: 20 } }}>L</Typography>
           </Box>
           <Box>
-            <Typography variant="h6" sx={{ fontWeight: 900, color: '#F8FAFC', letterSpacing: 0.5 }}>
+            <Typography sx={{ fontWeight: 900, color: '#F8FAFC', fontSize: { xs: 14, sm: 17 }, letterSpacing: 0.3 }}>
               غرفة القيادة والتحكم الميدانية اللحظية
             </Typography>
-            <Typography variant="caption" sx={{ color: '#94A3B8' }}>
+            <Typography variant="caption" sx={{ color: '#94A3B8', fontSize: { xs: 10, sm: 12 } }}>
               المنصة المتكاملة لمجتمع ومواقف الرياض الذكية
             </Typography>
           </Box>
         </Stack>
 
-        <Stack direction="row" spacing={2.5} alignItems="center">
+        <Stack direction="row" spacing={1.5} alignItems="center" sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: 'space-between' }}>
           {/* Live Clock Badge */}
           <Box
             sx={{
-              px: 2,
-              py: 0.75,
+              px: { xs: 1.5, sm: 2 },
+              py: 0.5,
               bgcolor: 'rgba(15, 23, 42, 0.8)',
               border: '1px solid rgba(0, 229, 255, 0.3)',
               borderRadius: 2,
               boxShadow: 'inset 0 0 10px rgba(0, 229, 255, 0.15)',
             }}
           >
-            <Typography sx={{ fontFamily: 'monospace', fontWeight: 900, color: '#00E5FF', fontSize: 16 }}>
+            <Typography sx={{ fontFamily: 'monospace', fontWeight: 900, color: '#00E5FF', fontSize: { xs: 13, sm: 15 } }}>
               {currentTime}
             </Typography>
           </Box>
 
           {/* Operator Profile */}
-          <Stack direction="row" spacing={1.5} alignItems="center">
+          <Stack direction="row" spacing={1} alignItems="center">
             <Box sx={{ textAlign: 'left' }}>
-              <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#F8FAFC' }}>سارة المنصور</Typography>
-              <Typography sx={{ fontSize: 11, color: '#00E5FF' }}>مشرف العمليات</Typography>
+              <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 800, color: '#F8FAFC' }}>سارة المنصور</Typography>
+              <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#00E5FF' }}>مشرف العمليات</Typography>
             </Box>
             <Box
               sx={{
-                width: 38,
-                height: 38,
+                width: { xs: 32, sm: 38 },
+                height: { xs: 32, sm: 38 },
                 borderRadius: '50%',
                 border: '2px solid #00E5FF',
                 boxShadow: '0 0 10px rgba(0, 229, 255, 0.3)',
@@ -316,6 +335,7 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
                 placeItems: 'center',
                 color: '#fff',
                 fontWeight: 900,
+                fontSize: { xs: 12, sm: 14 },
               }}
             >
               س
@@ -324,240 +344,159 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
         </Stack>
       </Stack>
 
-      {/* 🌟 1. TOP ROW: 6 GLOWING NEON KPI CARDS */}
+      {/* 🌟 1. TOP ROW: 6 GLOWING NEON KPI CARDS (ADAPTIVE MOBILE/TABLET GRID) */}
       <Box
         sx={{
           display: 'grid',
-          gridTemplateColumns: { xs: 'repeat(2, 1fr)', sm: 'repeat(3, 1fr)', lg: 'repeat(6, 1fr)' },
-          gap: 2,
+          gridTemplateColumns: {
+            xs: 'repeat(2, 1fr)',
+            sm: 'repeat(3, 1fr)',
+            md: 'repeat(3, 1fr)',
+            lg: 'repeat(6, 1fr)',
+          },
+          gap: { xs: 1.25, sm: 1.75, md: 2 },
           mb: 3,
         }}
       >
-        {/* CARD 1: OCCUPANCY (Amber) */}
+        {/* CARD 1: OCCUPANCY */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #F59E0B',
-            boxShadow: '0 0 20px rgba(245, 158, 11, 0.25), inset 0 0 15px rgba(245, 158, 11, 0.08)',
-            position: 'relative',
+            boxShadow: '0 0 18px rgba(245, 158, 11, 0.22), inset 0 0 12px rgba(245, 158, 11, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#FCD34D' }}>نسبة الإشغال</Typography>
-            <Typography sx={{ fontSize: 18 }}>🥧</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#FCD34D' }}>نسبة الإشغال</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>🥧</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#F59E0B', mt: 1, letterSpacing: -1 }}>
+          <Typography sx={{ fontSize: { xs: 22, sm: 26, md: 32 }, fontWeight: 900, color: '#F59E0B', mt: 0.5, letterSpacing: -1 }}>
             78%
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>1,560 / 2,000 موقف</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>1,560 / 2,000 موقف</Typography>
         </Box>
 
-        {/* CARD 2: ACTIVE VEHICLES (Cyan) */}
+        {/* CARD 2: ACTIVE VEHICLES */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #00E5FF',
-            boxShadow: '0 0 20px rgba(0, 229, 255, 0.25), inset 0 0 15px rgba(0, 229, 255, 0.08)',
+            boxShadow: '0 0 18px rgba(0, 229, 255, 0.22), inset 0 0 12px rgba(0, 229, 255, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#67E8F9' }}>مركبات نشطة</Typography>
-            <Typography sx={{ fontSize: 18 }}>🚗</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#67E8F9' }}>مركبات نشطة</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>🚗</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#00E5FF', mt: 1, letterSpacing: -1 }}>
+          <Typography sx={{ fontSize: { xs: 22, sm: 26, md: 32 }, fontWeight: 900, color: '#00E5FF', mt: 0.5, letterSpacing: -1 }}>
             240
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>داخل المجمع الآن</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>داخل المجمع الآن</Typography>
         </Box>
 
-        {/* CARD 3: ENTRY/EXIT FLOW (Green) */}
+        {/* CARD 3: ENTRY/EXIT FLOW */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #10B981',
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.08)',
+            boxShadow: '0 0 18px rgba(16, 185, 129, 0.22), inset 0 0 12px rgba(16, 185, 129, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#6EE7B7' }}>معدلات الدخول والخروج</Typography>
-            <Typography sx={{ fontSize: 18 }}>🔄</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#6EE7B7' }}>الدخول / الخروج</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>🔄</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 28, fontWeight: 900, color: '#10B981', mt: 1, letterSpacing: -0.5 }}>
-            115 / 102 <Typography component="span" sx={{ fontSize: 14 }}>p/h</Typography>
+          <Typography sx={{ fontSize: { xs: 18, sm: 22, md: 28 }, fontWeight: 900, color: '#10B981', mt: 0.5 }}>
+            115 / 102 <Typography component="span" sx={{ fontSize: { xs: 10, sm: 12 } }}>p/h</Typography>
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>تدفق مروري انسيابي</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>تدفق انسيابي</Typography>
         </Box>
 
-        {/* CARD 4: REVENUE (Gold) */}
+        {/* CARD 4: REVENUE */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #EAB308',
-            boxShadow: '0 0 20px rgba(234, 179, 8, 0.25), inset 0 0 15px rgba(234, 179, 8, 0.08)',
+            boxShadow: '0 0 18px rgba(234, 179, 8, 0.22), inset 0 0 12px rgba(234, 179, 8, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#FDE047' }}>الإيرادات</Typography>
-            <Typography sx={{ fontSize: 18 }}>💰</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#FDE047' }}>الإيرادات</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>💰</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 26, fontWeight: 900, color: '#FACC15', mt: 1 }}>
-            48,250 <Typography component="span" sx={{ fontSize: 14, fontWeight: 800 }}>SAR</Typography>
+          <Typography sx={{ fontSize: { xs: 18, sm: 22, md: 26 }, fontWeight: 900, color: '#FACC15', mt: 0.5 }}>
+            48,250 <Typography component="span" sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 800 }}>SAR</Typography>
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>تسوية الحسابات المعزولة</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>تسوية مستقلة</Typography>
         </Box>
 
-        {/* CARD 5: LPR CAMERAS (Cyan) */}
+        {/* CARD 5: LPR CAMERAS */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #00E5FF',
-            boxShadow: '0 0 20px rgba(0, 229, 255, 0.25), inset 0 0 15px rgba(0, 229, 255, 0.08)',
+            boxShadow: '0 0 18px rgba(0, 229, 255, 0.22), inset 0 0 12px rgba(0, 229, 255, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#67E8F9' }}>كاميرات LPR المتصلة</Typography>
-            <Typography sx={{ fontSize: 18 }}>📹</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#67E8F9' }}>كاميرات LPR</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>📹</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#00E5FF', mt: 1 }}>
+          <Typography sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, fontWeight: 900, color: '#00E5FF', mt: 0.5 }}>
             112 / 115
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>دقة التعرف: 99.4%</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>دقة الرصد: 99.4%</Typography>
         </Box>
 
-        {/* CARD 6: EV CHARGERS (Emerald) */}
+        {/* CARD 6: EV CHARGERS */}
         <Box
           sx={{
-            p: 2,
-            borderRadius: 3,
+            p: { xs: 1.25, sm: 1.75, md: 2 },
+            borderRadius: { xs: 2, sm: 3 },
             bgcolor: 'rgba(15, 23, 42, 0.85)',
             border: '1.5px solid #10B981',
-            boxShadow: '0 0 20px rgba(16, 185, 129, 0.25), inset 0 0 15px rgba(16, 185, 129, 0.08)',
+            boxShadow: '0 0 18px rgba(16, 185, 129, 0.22), inset 0 0 12px rgba(16, 185, 129, 0.08)',
           }}
         >
           <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Typography sx={{ fontSize: 13, fontWeight: 700, color: '#6EE7B7' }}>شواحن EV متصلة</Typography>
-            <Typography sx={{ fontSize: 18 }}>⚡</Typography>
+            <Typography sx={{ fontSize: { xs: 11, sm: 13 }, fontWeight: 700, color: '#6EE7B7' }}>شواحن EV</Typography>
+            <Typography sx={{ fontSize: { xs: 14, sm: 18 } }}>⚡</Typography>
           </Stack>
-          <Typography sx={{ fontSize: 32, fontWeight: 900, color: '#10B981', mt: 1 }}>
+          <Typography sx={{ fontSize: { xs: 20, sm: 24, md: 32 }, fontWeight: 900, color: '#10B981', mt: 0.5 }}>
             18 / 20
           </Typography>
-          <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>استهلاك الطاقة: 420 kW</Typography>
+          <Typography sx={{ fontSize: { xs: 9, sm: 11 }, color: '#94A3B8' }}>القدرة: 420 kW</Typography>
         </Box>
       </Box>
 
-      {/* 🌟 2. MAIN COCKPIT: 3 COLUMNS EXACTLY AS IN THE IMAGE */}
+      {/* 🌟 2. MAIN COCKPIT: ADAPTIVE 3-PANEL STACKING (Center 3D First on Mobile/Tablet) */}
       <Box
         sx={{
           display: 'grid',
           gridTemplateColumns: { xs: '1fr', lg: '280px 1fr 280px' },
-          gap: 2.5,
+          gap: { xs: 2, sm: 2.5 },
           alignItems: 'stretch',
         }}
       >
-        {/* ================= LEFT PANEL: LIVE LPR & BARRIERS ================= */}
+        {/* ================= CENTER PANEL (3D MAP) — TOP PRIORITY ON MOBILE ================= */}
         <Box
           sx={{
-            bgcolor: 'rgba(10, 16, 26, 0.95)',
-            borderRadius: 3.5,
-            border: '1px solid rgba(0, 229, 255, 0.25)',
-            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
-            p: 2,
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 2,
-          }}
-        >
-          {/* LPR Header */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center">
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#EF4444', boxShadow: '0 0 8px #EF4444' }} />
-              <Typography sx={{ fontWeight: 800, fontSize: 14, color: '#F8FAFC' }}>
-                بث مباشر لكاميرات LPR
-              </Typography>
-            </Stack>
-            <Chip size="small" label="LIVE" sx={{ bgcolor: 'rgba(239, 68, 68, 0.2)', color: '#EF4444', fontWeight: 900, fontSize: 10, height: 20 }} />
-          </Stack>
-
-          {/* Recognized Saudi Plates Feed */}
-          <Stack spacing={1.5}>
-            {[
-              { plate: 'أ ب ج 1004', gate: 'البوابة الشمالية - دخول', time: 'منذ لحظات', conf: '99.8%' },
-              { plate: 'س ع د 5431', gate: 'البوابة الجنوبية - دخول', time: 'منذ دقيقة', conf: '99.4%' },
-              { plate: 'هـ م ل 8892', gate: 'بوابة المخرج الرئيسي', time: 'منذ 3 دقائق', conf: '98.9%' },
-              { plate: 'ط و ق 3000', gate: 'بوابة كبار الشخصيات VIP', time: 'منذ 5 دقائق', conf: '99.9%' },
-            ].map((item, idx) => (
-              <Box
-                key={idx}
-                sx={{
-                  p: 1.5,
-                  borderRadius: 2,
-                  bgcolor: 'rgba(15, 23, 42, 0.7)',
-                  border: '1px solid rgba(255, 255, 255, 0.08)',
-                  transition: 'all 0.2s',
-                  '&:hover': { borderColor: '#00E5FF', bgcolor: 'rgba(0, 229, 255, 0.05)' },
-                }}
-              >
-                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                  <SaudiPlateBadge plateNumber={item.plate} size="small" />
-                  <Chip size="small" label={item.conf} sx={{ bgcolor: 'rgba(16, 185, 129, 0.15)', color: '#34D399', fontSize: 10, height: 18 }} />
-                </Stack>
-                <Stack direction="row" justifyContent="space-between" alignItems="center">
-                  <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>{item.gate}</Typography>
-                  <Typography sx={{ fontSize: 10, color: '#64748B' }}>{item.time}</Typography>
-                </Stack>
-              </Box>
-            ))}
-          </Stack>
-
-          {/* Barrier States Box */}
-          <Box
-            sx={{
-              mt: 'auto',
-              p: 2,
-              borderRadius: 2.5,
-              bgcolor: 'rgba(15, 23, 42, 0.9)',
-              border: '1px solid rgba(0, 229, 255, 0.18)',
-            }}
-          >
-            <Typography sx={{ fontWeight: 800, fontSize: 13, color: '#F8FAFC', mb: 1.5 }}>
-              حالة حواجز البوابات
-            </Typography>
-
-            <Stack spacing={1}>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography sx={{ fontSize: 12, color: '#94A3B8' }}>حواجز البوابة الشمالية:</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 900, color: '#10B981' }}>مفتوحة</Typography>
-              </Stack>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography sx={{ fontSize: 12, color: '#94A3B8' }}>حواجز البوابة الجنوبية:</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 900, color: '#10B981' }}>مفتوحة</Typography>
-              </Stack>
-              <Stack direction="row" justifyContent="space-between" alignItems="center">
-                <Typography sx={{ fontSize: 12, color: '#94A3B8' }}>حواجز بوابة الخروج 2:</Typography>
-                <Typography sx={{ fontSize: 12, fontWeight: 900, color: '#EF4444' }}>مغلقة</Typography>
-              </Stack>
-            </Stack>
-          </Box>
-        </Box>
-
-        {/* ================= CENTER PANEL: 3D BUILDING & FLOOR MAP ================= */}
-        <Box
-          sx={{
+            order: { xs: 1, lg: 2 },
             bgcolor: 'rgba(8, 14, 22, 0.98)',
-            borderRadius: 3.5,
+            borderRadius: { xs: 2.5, sm: 3.5 },
             border: '1px solid rgba(0, 229, 255, 0.3)',
             boxShadow: '0 0 35px rgba(0, 229, 255, 0.1)',
-            p: 2.5,
+            p: { xs: 1.5, sm: 2, md: 2.5 },
             display: 'flex',
             flexDirection: 'column',
             position: 'relative',
@@ -565,9 +504,15 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
           }}
         >
           {/* Center Header: Floor Navigation */}
-          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 2 }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <Typography sx={{ fontSize: 13, fontWeight: 800, color: '#94A3B8' }}>الطوابق:</Typography>
+          <Stack
+            direction={{ xs: 'column', sm: 'row' }}
+            justifyContent="space-between"
+            alignItems={{ xs: 'flex-start', sm: 'center' }}
+            spacing={1.5}
+            sx={{ mb: 2 }}
+          >
+            <Stack direction="row" spacing={1} alignItems="center" sx={{ flexWrap: 'wrap', gap: 0.5 }}>
+              <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#94A3B8' }}>الطوابق:</Typography>
               {['الأرضي (P1)', 'الأول', 'الثاني'].map((fName, idx) => (
                 <Button
                   key={idx}
@@ -576,8 +521,10 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
                   variant={activeFloor === idx ? 'contained' : 'outlined'}
                   sx={{
                     borderRadius: 2,
-                    fontSize: 12,
+                    fontSize: { xs: 11, sm: 12 },
                     fontWeight: 800,
+                    px: { xs: 1.25, sm: 1.75 },
+                    py: 0.5,
                     bgcolor: activeFloor === idx ? '#00E5FF' : 'transparent',
                     color: activeFloor === idx ? '#050911' : '#94A3B8',
                     borderColor: 'rgba(0, 229, 255, 0.3)',
@@ -592,15 +539,16 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
             <Chip
               size="small"
               label={`الموقف المحدد: ${selectedSlot || 'A-104'}`}
-              sx={{ bgcolor: 'rgba(0, 229, 255, 0.15)', color: '#00E5FF', fontWeight: 800, border: '1px solid #00E5FF' }}
+              sx={{ bgcolor: 'rgba(0, 229, 255, 0.15)', color: '#00E5FF', fontWeight: 800, border: '1px solid #00E5FF', fontSize: 11 }}
             />
           </Stack>
 
-          {/* 3D Canvas Viewport */}
+          {/* 3D Canvas Viewport (Auto-Sized with Observer) */}
           <Box
+            ref={containerRef}
             sx={{
               flex: 1,
-              minHeight: 460,
+              minHeight: { xs: 320, sm: 400, md: 460 },
               width: '100%',
               borderRadius: 3,
               position: 'relative',
@@ -612,8 +560,6 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
           >
             <canvas
               ref={canvasRef}
-              width={800}
-              height={460}
               style={{
                 width: '100%',
                 height: '100%',
@@ -622,64 +568,152 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
               }}
             />
 
-            {/* Bottom Right Legend (matching image) */}
+            {/* Bottom Legend (Adaptive Scale) */}
             <Box
               sx={{
                 position: 'absolute',
-                bottom: 16,
-                right: 16,
-                bgcolor: 'rgba(10, 16, 26, 0.88)',
-                p: 1.5,
+                bottom: { xs: 8, sm: 14 },
+                right: { xs: 8, sm: 14 },
+                bgcolor: 'rgba(10, 16, 26, 0.92)',
+                p: { xs: 1, sm: 1.5 },
                 borderRadius: 2,
                 border: '1px solid rgba(255, 255, 255, 0.12)',
-                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.5)',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.6)',
+                backdropFilter: 'blur(8px)',
               }}
             >
-              <Stack spacing={0.75}>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: '#F59E0B', boxShadow: '0 0 8px #F59E0B' }} />
-                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#F8FAFC' }}>Occupied slots (مشغول)</Typography>
+              <Stack spacing={0.5}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box sx={{ width: 10, height: 10, borderRadius: 0.5, bgcolor: '#F59E0B', boxShadow: '0 0 6px #F59E0B' }} />
+                  <Typography sx={{ fontSize: { xs: 9, sm: 11 }, fontWeight: 700, color: '#F8FAFC' }}>مشغول (Occupied)</Typography>
                 </Stack>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: '#00E5FF', boxShadow: '0 0 8px #00E5FF' }} />
-                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#F8FAFC' }}>Available slots (متاح)</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box sx={{ width: 10, height: 10, borderRadius: 0.5, bgcolor: '#00E5FF', boxShadow: '0 0 6px #00E5FF' }} />
+                  <Typography sx={{ fontSize: { xs: 9, sm: 11 }, fontWeight: 700, color: '#F8FAFC' }}>متاح (Available)</Typography>
                 </Stack>
-                <Stack direction="row" spacing={1.5} alignItems="center">
-                  <Box sx={{ width: 14, height: 14, borderRadius: 0.5, bgcolor: '#10B981', boxShadow: '0 0 8px #10B981' }} />
-                  <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#F8FAFC' }}>EV Fast chargers (شحن سريع)</Typography>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <Box sx={{ width: 10, height: 10, borderRadius: 0.5, bgcolor: '#10B981', boxShadow: '0 0 6px #10B981' }} />
+                  <Typography sx={{ fontSize: { xs: 9, sm: 11 }, fontWeight: 700, color: '#F8FAFC' }}>شاحن EV سريع</Typography>
                 </Stack>
               </Stack>
             </Box>
           </Box>
         </Box>
 
-        {/* ================= RIGHT PANEL: ISSUES KANBAN & HEALTH MATRIX ================= */}
+        {/* ================= LEFT PANEL: LIVE LPR & BARRIERS ================= */}
         <Box
           sx={{
+            order: { xs: 2, lg: 1 },
+            bgcolor: 'rgba(10, 16, 26, 0.95)',
+            borderRadius: { xs: 2.5, sm: 3.5 },
+            border: '1px solid rgba(0, 229, 255, 0.25)',
+            boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
+            p: 2,
             display: 'flex',
             flexDirection: 'column',
-            gap: 2.5,
+            gap: 2,
           }}
         >
-          {/* 1. ISSUES KANBAN SUMMARY (Top Box) */}
+          {/* LPR Header */}
+          <Stack direction="row" justifyContent="space-between" alignItems="center">
+            <Stack direction="row" spacing={1} alignItems="center">
+              <Box sx={{ width: 8, height: 8, borderRadius: '50%', bgcolor: '#EF4444', boxShadow: '0 0 8px #EF4444' }} />
+              <Typography sx={{ fontWeight: 800, fontSize: 13, color: '#F8FAFC' }}>
+                بث مباشر لكاميرات LPR
+              </Typography>
+            </Stack>
+            <Chip size="small" label="LIVE" sx={{ bgcolor: 'rgba(239, 68, 68, 0.2)', color: '#EF4444', fontWeight: 900, fontSize: 9, height: 18 }} />
+          </Stack>
+
+          {/* Recognized Saudi Plates Feed */}
+          <Stack spacing={1.25}>
+            {[
+              { plate: 'أ ب ج 1004', gate: 'البوابة الشمالية - دخول', time: 'منذ لحظات', conf: '99.8%' },
+              { plate: 'س ع د 5431', gate: 'البوابة الجنوبية - دخول', time: 'منذ دقيقة', conf: '99.4%' },
+              { plate: 'هـ م ل 8892', gate: 'بوابة المخرج الرئيسي', time: 'منذ 3 دقائق', conf: '98.9%' },
+              { plate: 'ط و ق 3000', gate: 'بوابة VIP التنفيذية', time: 'منذ 5 دقائق', conf: '99.9%' },
+            ].map((item, idx) => (
+              <Box
+                key={idx}
+                sx={{
+                  p: 1.25,
+                  borderRadius: 2,
+                  bgcolor: 'rgba(15, 23, 42, 0.7)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  transition: 'all 0.2s',
+                  '&:hover': { borderColor: '#00E5FF', bgcolor: 'rgba(0, 229, 255, 0.05)' },
+                }}
+              >
+                <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.75 }}>
+                  <SaudiPlateBadge plateNumber={item.plate} size="small" />
+                  <Chip size="small" label={item.conf} sx={{ bgcolor: 'rgba(16, 185, 129, 0.15)', color: '#34D399', fontSize: 9, height: 16 }} />
+                </Stack>
+                <Stack direction="row" justifyContent="space-between" alignItems="center">
+                  <Typography sx={{ fontSize: 10, color: '#94A3B8' }}>{item.gate}</Typography>
+                  <Typography sx={{ fontSize: 9, color: '#64748B' }}>{item.time}</Typography>
+                </Stack>
+              </Box>
+            ))}
+          </Stack>
+
+          {/* Barrier States Box */}
+          <Box
+            sx={{
+              mt: 'auto',
+              p: 1.5,
+              borderRadius: 2,
+              bgcolor: 'rgba(15, 23, 42, 0.9)',
+              border: '1px solid rgba(0, 229, 255, 0.18)',
+            }}
+          >
+            <Typography sx={{ fontWeight: 800, fontSize: 12, color: '#F8FAFC', mb: 1 }}>
+              حالة حواجز البوابات
+            </Typography>
+
+            <Stack spacing={0.75}>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>حواجز البوابة الشمالية:</Typography>
+                <Typography sx={{ fontSize: 11, fontWeight: 900, color: '#10B981' }}>مفتوحة</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>حواجز البوابة الجنوبية:</Typography>
+                <Typography sx={{ fontSize: 11, fontWeight: 900, color: '#10B981' }}>مفتوحة</Typography>
+              </Stack>
+              <Stack direction="row" justifyContent="space-between" alignItems="center">
+                <Typography sx={{ fontSize: 11, color: '#94A3B8' }}>حواجز بوابة الخروج 2:</Typography>
+                <Typography sx={{ fontSize: 11, fontWeight: 900, color: '#EF4444' }}>مغلقة</Typography>
+              </Stack>
+            </Stack>
+          </Box>
+        </Box>
+
+        {/* ================= RIGHT PANEL: ISSUES & HEALTH ================= */}
+        <Box
+          sx={{
+            order: 3,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 2,
+          }}
+        >
+          {/* 1. ISSUES KANBAN SUMMARY */}
           <Box
             sx={{
               bgcolor: 'rgba(10, 16, 26, 0.95)',
-              borderRadius: 3.5,
+              borderRadius: { xs: 2.5, sm: 3.5 },
               border: '1px solid rgba(0, 229, 255, 0.25)',
               boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
               p: 2,
             }}
           >
-            <Typography sx={{ fontWeight: 800, fontSize: 14, color: '#F8FAFC', mb: 1.5 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: 13, color: '#F8FAFC', mb: 1.25 }}>
               لوحة متابعة المشاكل (Issues)
             </Typography>
 
-            {/* 3 Status Cards (Red, Amber, Green) */}
-            <Stack spacing={1.2}>
+            <Stack spacing={1}>
               <Box
                 sx={{
-                  p: 1.25,
+                  p: 1,
                   borderRadius: 2,
                   bgcolor: 'rgba(239, 68, 68, 0.15)',
                   border: '1px solid #EF4444',
@@ -688,13 +722,13 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
                   alignItems: 'center',
                 }}
               >
-                <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#FCA5A5' }}>جديد</Typography>
-                <Chip size="small" label="3" sx={{ bgcolor: '#EF4444', color: '#fff', fontWeight: 900, height: 20 }} />
+                <Typography sx={{ fontSize: 11, fontWeight: 800, color: '#FCA5A5' }}>جديد</Typography>
+                <Chip size="small" label="3" sx={{ bgcolor: '#EF4444', color: '#fff', fontWeight: 900, height: 18, fontSize: 10 }} />
               </Box>
 
               <Box
                 sx={{
-                  p: 1.25,
+                  p: 1,
                   borderRadius: 2,
                   bgcolor: 'rgba(245, 158, 11, 0.15)',
                   border: '1px solid #F59E0B',
@@ -703,13 +737,13 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
                   alignItems: 'center',
                 }}
               >
-                <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#FCD34D' }}>قيد المعالجة</Typography>
-                <Chip size="small" label="2" sx={{ bgcolor: '#F59E0B', color: '#000', fontWeight: 900, height: 20 }} />
+                <Typography sx={{ fontSize: 11, fontWeight: 800, color: '#FCD34D' }}>قيد المعالجة</Typography>
+                <Chip size="small" label="2" sx={{ bgcolor: '#F59E0B', color: '#000', fontWeight: 900, height: 18, fontSize: 10 }} />
               </Box>
 
               <Box
                 sx={{
-                  p: 1.25,
+                  p: 1,
                   borderRadius: 2,
                   bgcolor: 'rgba(16, 185, 129, 0.15)',
                   border: '1px solid #10B981',
@@ -718,52 +752,50 @@ export const CyberOperationsCockpit: React.FC<CyberOperationsCockpitProps> = () 
                   alignItems: 'center',
                 }}
               >
-                <Typography sx={{ fontSize: 12, fontWeight: 800, color: '#6EE7B7' }}>تم الحل</Typography>
-                <Chip size="small" label="10" sx={{ bgcolor: '#10B981', color: '#000', fontWeight: 900, height: 20 }} />
+                <Typography sx={{ fontSize: 11, fontWeight: 800, color: '#6EE7B7' }}>تم الحل</Typography>
+                <Chip size="small" label="10" sx={{ bgcolor: '#10B981', color: '#000', fontWeight: 900, height: 18, fontSize: 10 }} />
               </Box>
             </Stack>
           </Box>
 
-          {/* 2. HARDWARE HEALTH MATRIX (Bottom Box with Pulse Waves) */}
+          {/* 2. HARDWARE HEALTH MATRIX WITH ECG WAVES */}
           <Box
             sx={{
               bgcolor: 'rgba(10, 16, 26, 0.95)',
-              borderRadius: 3.5,
+              borderRadius: { xs: 2.5, sm: 3.5 },
               border: '1px solid rgba(0, 229, 255, 0.25)',
               boxShadow: '0 10px 30px rgba(0, 0, 0, 0.6)',
               p: 2,
               flex: 1,
             }}
           >
-            <Typography sx={{ fontWeight: 800, fontSize: 14, color: '#F8FAFC', mb: 1 }}>
+            <Typography sx={{ fontWeight: 800, fontSize: 13, color: '#F8FAFC', mb: 0.75 }}>
               مصفوفة صحة الأجهزة
             </Typography>
 
-            <Stack direction="row" spacing={2} sx={{ mb: 1.5 }}>
-              <Typography sx={{ fontSize: 10, color: '#10B981', fontWeight: 700 }}>● Healthy (Green)</Typography>
-              <Typography sx={{ fontSize: 10, color: '#F59E0B', fontWeight: 700 }}>● Warning (Amber)</Typography>
+            <Stack direction="row" spacing={1.5} sx={{ mb: 1.25 }}>
+              <Typography sx={{ fontSize: 9, color: '#10B981', fontWeight: 700 }}>● Healthy</Typography>
+              <Typography sx={{ fontSize: 9, color: '#F59E0B', fontWeight: 700 }}>● Warning</Typography>
             </Stack>
 
-            {/* Health Rows with ECG Waves */}
-            <Stack spacing={1.5}>
+            <Stack spacing={1}>
               {[
                 { name: 'LPR Cameras', status: 'Healthy', color: '#10B981' },
                 { name: 'Kiosks & QR', status: 'Healthy', color: '#10B981' },
                 { name: 'Gate Barriers', status: 'Healthy', color: '#10B981' },
-                { name: 'Parking Sensors', status: 'Warning', color: '#F59E0B' },
+                { name: 'Sensors', status: 'Warning', color: '#F59E0B' },
               ].map((dev, idx) => (
-                <Box key={idx} sx={{ p: 1, borderRadius: 2, bgcolor: 'rgba(15, 23, 42, 0.7)' }}>
-                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.5 }}>
-                    <Typography sx={{ fontSize: 11, fontWeight: 700, color: '#E2E8F0' }}>{dev.name}</Typography>
-                    <Typography sx={{ fontSize: 10, fontWeight: 800, color: dev.color }}>{dev.status}</Typography>
+                <Box key={idx} sx={{ p: 0.75, borderRadius: 1.5, bgcolor: 'rgba(15, 23, 42, 0.7)' }}>
+                  <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 0.25 }}>
+                    <Typography sx={{ fontSize: 10, fontWeight: 700, color: '#E2E8F0' }}>{dev.name}</Typography>
+                    <Typography sx={{ fontSize: 9, fontWeight: 800, color: dev.color }}>{dev.status}</Typography>
                   </Stack>
-                  {/* Animated ECG SVG line */}
-                  <svg width="100%" height="20" viewBox="0 0 200 20">
+                  <svg width="100%" height="16" viewBox="0 0 200 16">
                     <path
-                      d="M0,10 L40,10 L50,3 L60,17 L70,5 L80,14 L90,10 L200,10"
+                      d="M0,8 L40,8 L50,2 L60,14 L70,4 L80,12 L90,8 L200,8"
                       fill="none"
                       stroke={dev.color}
-                      strokeWidth="1.8"
+                      strokeWidth="1.6"
                       strokeLinecap="round"
                     />
                   </svg>

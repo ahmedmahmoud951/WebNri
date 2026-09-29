@@ -20,6 +20,9 @@ import {
   Typography,
   useMediaQuery,
   alpha,
+  BottomNavigation,
+  BottomNavigationAction,
+  Paper,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 
@@ -362,13 +365,14 @@ export function AppShell() {
         </Drawer>
       )}
 
-      {/* Main Content Area */}
+      {/* Main Content Area with Adaptive Mobile/Tablet Padding */}
       <Box
         component="main"
         sx={{
           flexGrow: 1,
-          p: { xs: 2.5, sm: 4 },
-          mt: 8,
+          p: { xs: 1.25, sm: 2.25, md: 3.5 },
+          pb: { xs: 10, md: 3.5 },
+          mt: { xs: 7, sm: 8 },
           width: { sm: `calc(100% - ${drawerWidth}px)` },
           minHeight: 'calc(100vh - 64px)',
           bgcolor: 'background.default',
@@ -376,6 +380,62 @@ export function AppShell() {
       >
         <Outlet />
       </Box>
+
+      {/* Mobile & Tablet Fixed Bottom Navigation Bar */}
+      {!isDesktop && (
+        <Paper
+          elevation={12}
+          sx={{
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 1200,
+            borderTop: '1px solid rgba(0, 229, 255, 0.25)',
+            bgcolor: 'rgba(8, 14, 24, 0.96)',
+            backdropFilter: 'blur(16px)',
+            pb: 'var(--sab)',
+          }}
+        >
+          <BottomNavigation
+            showLabels
+            value={
+              location.pathname.startsWith('/live-monitor')
+                ? 1
+                : location.pathname.startsWith('/floor-maps')
+                ? 2
+                : location.pathname.startsWith('/find-my-car')
+                ? 3
+                : location.pathname.startsWith('/operations')
+                ? 4
+                : 0
+            }
+            onChange={(_, newValue) => {
+              const paths = ['/dashboard', '/live-monitor', '/floor-maps', '/find-my-car', '/operations'];
+              navigate(paths[newValue] || '/dashboard');
+            }}
+            sx={{
+              bgcolor: 'transparent',
+              height: 58,
+              '& .MuiBottomNavigationAction-root': {
+                color: '#64748B',
+                minWidth: 'auto',
+                px: 0.5,
+                '&.Mui-selected': {
+                  color: '#00E5FF',
+                  fontWeight: 800,
+                },
+              },
+            }}
+          >
+            <BottomNavigationAction label={isEn ? 'Dashboard' : 'الرئيسية'} icon={<DashboardIcon fontSize="small" />} />
+            <BottomNavigationAction label={isEn ? 'Live LPR' : 'المراقبة'} icon={<VideocamIcon fontSize="small" />} />
+            <BottomNavigationAction label={isEn ? 'Floor Maps' : 'الخرائط'} icon={<MapIcon fontSize="small" />} />
+            <BottomNavigationAction label={isEn ? 'Find Car' : 'سيارتي'} icon={<LocationSearchingIcon fontSize="small" />} />
+            <BottomNavigationAction label={isEn ? 'Cockpit' : 'العمليات'} icon={<PrecisionManufacturingIcon fontSize="small" />} />
+          </BottomNavigation>
+        </Paper>
+      )}
     </Box>
   );
 }
