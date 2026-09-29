@@ -32,8 +32,8 @@ function proxyWithLog(target: string) {
     changeOrigin: true,
     secure: false,
     agent: isHttps ? keepAliveHttpsAgent : keepAliveAgent,
-    timeout: 60_000,
-    proxyTimeout: 60_000,
+    timeout: 15_000,
+    proxyTimeout: 15_000,
     configure: (proxy: { on: (event: string, handler: (...args: unknown[]) => void) => void }) => {
       proxy.on('proxyReq', (_proxyReq, req) => {
         const request = req as { method?: string; url?: string };
@@ -62,7 +62,8 @@ function proxyWithLog(target: string) {
       proxy.on('error', (err, req) => {
         const request = req as { url?: string };
         const errCode = (err as any)?.code;
-        if (errCode === 'ECONNRESET' || errCode === 'EPIPE' || errCode === 'ECANCELED') {
+        if (errCode === 'ECONNRESET' || errCode === 'EPIPE' || errCode === 'ECANCELED' || errCode === 'ETIMEDOUT') {
+          console.warn(`\x1b[33m[API Proxy Notice]\x1b[0m ${request.url || ''} - ${errCode} (Remote server unresponsive, using client fallback)`);
           return;
         }
         console.warn(`\x1b[33m[API Proxy Notice]\x1b[0m ${request.url || ''} - ${errCode || (err as Error)?.message || 'Request reset'}`);

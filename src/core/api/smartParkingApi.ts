@@ -3,7 +3,7 @@ import { config } from '../config';
 
 const apiClient = axios.create({
   baseURL: config.apiBase,
-  timeout: 15000,
+  timeout: 5000,
 });
 
 apiClient.interceptors.request.use((req) => {
@@ -476,7 +476,9 @@ export const smartParkingApi = {
   // Find My Car & Indoor Navigation
   findMyCar: async (plate: string): Promise<FindCarResponse> => {
     try {
-      const res = await apiClient.get<any>(`/v1/client/navigation/find-my-car?plate=${encodeURIComponent(plate)}`);
+      const res = await apiClient.get<any>(`/v1/client/navigation/find-my-car?plate=${encodeURIComponent(plate)}`, {
+        timeout: 3000,
+      });
       const data = (res as any)?.data || res;
       if (data && (data.spot || data.building)) {
         return data as FindCarResponse;
@@ -486,13 +488,20 @@ export const smartParkingApi = {
     }
 
     const cleanPlate = plate.trim();
-    let arabicLetters = 'أ ب ج';
-    let digits = '1004';
+    const extractedDigits = cleanPlate.replace(/[^0-9]/g, '');
+    const extractedLetters = cleanPlate.replace(/[0-9]/g, '').trim();
+
+    let arabicLetters = extractedLetters || 'أ ب ج';
+    let digits = extractedDigits || '1004';
     let carModel = 'Toyota Camry 2024';
     let carColor = 'أبيض لؤلؤي';
     let spotCode = 'A-104';
-    let slotIndex = 4;
     let floorName = 'الدور الأرضي (Ground Floor)';
+
+    // Dynamic slot allocation between A-101 and A-114
+    const numSeed = parseInt(digits, 10) || 104;
+    const bayIndex = 1 + (Math.abs(numSeed) % 14); // 1..14
+    spotCode = `A-${100 + bayIndex}`;
 
     if (cleanPlate.includes('2026') || cleanPlate.includes('س ص ع')) {
       arabicLetters = 'س ص ع';
@@ -500,7 +509,6 @@ export const smartParkingApi = {
       carModel = 'Lexus RX 350';
       carColor = 'أسود ملوكي';
       spotCode = 'VIP-02';
-      slotIndex = 2;
       floorName = 'دور كبار الشخصيات VIP';
     } else if (cleanPlate.includes('3310') || cleanPlate.includes('د هـ و')) {
       arabicLetters = 'د هـ و';
@@ -508,7 +516,6 @@ export const smartParkingApi = {
       carModel = 'Mercedes-Benz S-500';
       carColor = 'فضي معدني';
       spotCode = 'B-208';
-      slotIndex = 8;
       floorName = 'القبو الأول (Basement B1)';
     } else if (cleanPlate.includes('4490') || cleanPlate.includes('ر ز ط')) {
       arabicLetters = 'ر ز ط';
@@ -516,11 +523,18 @@ export const smartParkingApi = {
       carModel = 'Hyundai Sonata 2024';
       carColor = 'رمادي تيتانيوم';
       spotCode = 'A-112';
-      slotIndex = 12;
       floorName = 'الدور الأرضي (Ground Floor)';
     } else {
-      digits = cleanPlate.replace(/[^0-9]/g, '') || '1004';
-      arabicLetters = cleanPlate.replace(/[0-9a-zA-Z]/g, '').trim() || 'أ ب ج';
+      const demoModels = [
+        { model: 'Toyota Camry 2024', color: 'أبيض لؤلؤي' },
+        { model: 'BMW 530i Luxury', color: 'أزرق ملكي داكن' },
+        { model: 'Genesis G80 Royal', color: 'رصاصي كربوني' },
+        { model: 'Audi A6 Quattro', color: 'فضي بلاتينيوم' },
+        { model: 'Porsche Cayenne', color: 'أسود ملوكي' },
+      ];
+      const sel = demoModels[Math.abs(numSeed) % demoModels.length];
+      carModel = sel.model;
+      carColor = sel.color;
     }
 
     return {
@@ -538,14 +552,14 @@ export const smartParkingApi = {
       durationParked: '1 ساعة و 24 دقيقة',
       accumulatedFee: 15,
       paymentStatus: 'Subscribed',
-      coordinates: { x: slotIndex * 70 + 80, y: 190, floorNumber: 0 },
+      coordinates: { x: bayIndex * 50 + 60, y: 190, floorNumber: 0 },
       nearestEntrance: 'بوابة الدخول الرئيسية (Lobby Entrance 01)',
       nearestElevator: 'المصعد المركزي (Elevator Bank A)',
       navigationPath: [
         { x: 50, y: 50, instruction: 'ادخل من بوابة البهو الرئيسية وتجاوز حاجز الترحيب' },
         { x: 50, y: 120, instruction: 'سر بمحاذاة الرواق الداخلي حتى المصعد المركزي' },
-        { x: slotIndex * 70 + 80, y: 120, instruction: 'انعطف يساراً نحو الممر الداخلي للمواقف' },
-        { x: slotIndex * 70 + 80, y: 190, instruction: `سيارتك متوقفة في الخانة المضيئة (${spotCode})` },
+        { x: bayIndex * 50 + 60, y: 120, instruction: 'انعطف نحو الممر الداخلي للمواقف' },
+        { x: bayIndex * 50 + 60, y: 190, instruction: `سيارتك متوقفة في الخانة المضيئة (${spotCode})` },
       ],
       directions: [
         'ادخل من بوابة البهو الرئيسية (Lobby A) بمحاذاة مكتب الاستقبال.',

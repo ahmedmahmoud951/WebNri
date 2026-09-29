@@ -44,7 +44,7 @@ export function FindCarPage() {
   const theme = useTheme();
   const isDark = theme.palette.mode === 'dark';
 
-  const [plate, setPlate] = useState('1004');
+  const [plate, setPlate] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<FindCarResponse | null>(null);
@@ -231,6 +231,66 @@ export function FindCarPage() {
       </Card>
 
       {error && <Alert severity="warning" sx={{ mb: 3, borderRadius: '12px', fontWeight: 700 }}>{error}</Alert>}
+
+      {/* Ready / Empty State when no search executed yet */}
+      {!result && !loading && (
+        <Card
+          sx={{
+            p: { xs: 3, md: 5 },
+            borderRadius: '20px',
+            bgcolor: isDark ? 'rgba(15, 23, 42, 0.72)' : 'rgba(255, 255, 255, 0.9)',
+            backdropFilter: 'blur(20px)',
+            border: '1px solid rgba(56, 189, 248, 0.25)',
+            textAlign: 'center',
+            boxShadow: isDark ? '0 16px 40px rgba(0,0,0,0.5)' : '0 16px 36px rgba(14, 165, 233, 0.1)',
+          }}
+        >
+          <Box
+            sx={{
+              width: 80,
+              height: 80,
+              borderRadius: '24px',
+              mx: 'auto',
+              mb: 2.5,
+              background: 'linear-gradient(135deg, rgba(56, 189, 248, 0.2), rgba(0, 240, 255, 0.15))',
+              border: '2px solid rgba(56, 189, 248, 0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: '#00F0FF',
+            }}
+          >
+            <DirectionsCarIcon sx={{ fontSize: 42 }} />
+          </Box>
+          <Typography variant="h5" fontWeight={900} sx={{ mb: 1 }}>
+            جاهز لتحديد موقع سيارتك ورسم مسار الوصول فوراً
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 600, mx: 'auto', mb: 3 }}>
+            اكتب أرقام أو حروف لوحة سيارتك في حقل البحث أعلاه، أو انقر على إحدى اللوحات النشطة أعلاه لمعاينة تفاصيل المركبة والموقف التفاعلي مع خط التوجيه الذكي خطوة بخطوة.
+          </Typography>
+
+          <Grid container spacing={2} sx={{ maxWidth: 800, mx: 'auto' }}>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '14px', bgcolor: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(240, 249, 255, 0.6)', border: '1px solid rgba(56, 189, 248, 0.15)' }}>
+                <Typography variant="subtitle2" fontWeight={800} color="#38BDF8">رصد بالكاميرات LPR</Typography>
+                <Typography variant="caption" color="text.secondary">التعرف التلقائي الذكي على لوحات السيارات بدقة 99%</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '14px', bgcolor: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(240, 249, 255, 0.6)', border: '1px solid rgba(56, 189, 248, 0.15)' }}>
+                <Typography variant="subtitle2" fontWeight={800} color="#00F0FF">مخطط الدور التفاعلي</Typography>
+                <Typography variant="caption" color="text.secondary">خريطة فورية للمبنى مع إبراز خانة الموقف المضاءة</Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={4}>
+              <Box sx={{ p: 2, borderRadius: '14px', bgcolor: isDark ? 'rgba(30, 41, 59, 0.5)' : 'rgba(240, 249, 255, 0.6)', border: '1px solid rgba(56, 189, 248, 0.15)' }}>
+                <Typography variant="subtitle2" fontWeight={800} color="#10B981">خط ملاحة متصل</Typography>
+                <Typography variant="caption" color="text.secondary">مسار مرسوم يوجهك من البوابة إلى سيارتك مباشرة</Typography>
+              </Box>
+            </Grid>
+          </Grid>
+        </Card>
+      )}
 
       {/* Main Results Layout */}
       {result && (
@@ -504,23 +564,38 @@ export function FindCarPage() {
                     { id: 'A-105', x: 460, y: 35 },
                     { id: 'A-106', x: 560, y: 35 },
                     { id: 'A-107', x: 660, y: 35 },
-                  ].map((bay) => (
-                    <g key={bay.id}>
-                      <rect
-                        x={bay.x}
-                        y={bay.y}
-                        width="80"
-                        height="65"
-                        rx="8"
-                        fill="rgba(15, 23, 42, 0.4)"
-                        stroke="rgba(255, 255, 255, 0.12)"
-                        strokeWidth="1.5"
-                      />
-                      <text x={bay.x + 40} y={bay.y + 38} textAnchor="middle" fill="#64748B" fontSize="12" fontWeight="700">
-                        {bay.id}
-                      </text>
-                    </g>
-                  ))}
+                  ].map((bay) => {
+                    const match = result.spot.match(/(\d+)/);
+                    let bayNum = match ? parseInt(match[1], 10) : 104;
+                    if (bayNum < 101 || bayNum > 114) {
+                      bayNum = 101 + (Math.abs(bayNum) % 14);
+                    }
+                    const isTarget = bay.id === `A-${bayNum}`;
+                    return (
+                      <g key={bay.id}>
+                        <rect
+                          x={bay.x}
+                          y={bay.y}
+                          width="80"
+                          height="65"
+                          rx="8"
+                          fill={isTarget ? 'rgba(0, 240, 255, 0.18)' : 'rgba(15, 23, 42, 0.4)'}
+                          stroke={isTarget ? '#00F0FF' : 'rgba(255, 255, 255, 0.12)'}
+                          strokeWidth={isTarget ? 3 : 1.5}
+                        />
+                        <text
+                          x={bay.x + 40}
+                          y={bay.y + 38}
+                          textAnchor="middle"
+                          fill={isTarget ? '#00F0FF' : '#64748B'}
+                          fontSize="13"
+                          fontWeight={isTarget ? '900' : '700'}
+                        >
+                          {bay.id}
+                        </text>
+                      </g>
+                    );
+                  })}
 
                   {/* Draw Parking Bays Row Bottom (A-108 to A-114) */}
                   {[
@@ -532,7 +607,12 @@ export function FindCarPage() {
                     { id: 'A-113', x: 560, y: 155 },
                     { id: 'A-114', x: 660, y: 155 },
                   ].map((bay) => {
-                    const isTarget = result.spot.includes(bay.id) || (result.spot.includes('104') && bay.id === 'A-104') || (result.spot.includes('112') && bay.id === 'A-112') || (result.spot.includes('208') && bay.id === 'A-110') || (result.spot.includes('VIP') && bay.id === 'A-109');
+                    const match = result.spot.match(/(\d+)/);
+                    let bayNum = match ? parseInt(match[1], 10) : 104;
+                    if (bayNum < 101 || bayNum > 114) {
+                      bayNum = 101 + (Math.abs(bayNum) % 14);
+                    }
+                    const isTarget = bay.id === `A-${bayNum}`;
                     return (
                       <g key={bay.id}>
                         <rect
@@ -588,22 +668,24 @@ export function FindCarPage() {
                   {/* 🚀 THE VIVID ANIMATED NAVIGATION LINE */}
                   {/* Dynamic target coords based on slot */}
                   {(() => {
-                    const targetX = result.spot.includes('104')
-                      ? 400
-                      : result.spot.includes('112')
-                      ? 500
-                      : result.spot.includes('208')
-                      ? 300
-                      : result.spot.includes('VIP')
-                      ? 200
-                      : 400;
-                    const targetY = 188;
+                    const match = result.spot.match(/(\d+)/);
+                    let bayNum = match ? parseInt(match[1], 10) : 104;
+                    if (bayNum < 101 || bayNum > 114) {
+                      bayNum = 101 + (Math.abs(bayNum) % 14);
+                    }
+                    const isTop = bayNum <= 107;
+                    const col = isTop ? (bayNum - 101) : (bayNum - 108);
+                    const targetX = 60 + col * 100 + 40;
+                    const targetY = isTop ? 68 : 188;
+                    const pathD = isTop
+                      ? `M 60 270 L 60 120 L ${targetX} 120 L ${targetX} 102`
+                      : `M 60 270 L 60 120 L ${targetX} 120 L ${targetX} 155`;
 
                     return (
                       <>
                         {/* Glow halo behind line */}
                         <path
-                          d={`M 60 270 L 60 120 L ${targetX} 120 L ${targetX} ${targetY}`}
+                          d={pathD}
                           fill="none"
                           stroke="rgba(0, 240, 255, 0.35)"
                           strokeWidth="8"
@@ -612,7 +694,7 @@ export function FindCarPage() {
 
                         {/* Animated dotted/dashed line */}
                         <path
-                          d={`M 60 270 L 60 120 L ${targetX} 120 L ${targetX} ${targetY}`}
+                          d={pathD}
                           fill="none"
                           stroke="url(#pathGradient)"
                           strokeWidth="4"
