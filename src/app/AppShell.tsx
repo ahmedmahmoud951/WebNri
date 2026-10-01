@@ -35,6 +35,7 @@ import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import QrCode2Icon from '@mui/icons-material/QrCode2';
 import BookmarkAddedIcon from '@mui/icons-material/BookmarkAdded';
+import NearMeIcon from '@mui/icons-material/NearMe';
 import PersonPinCircleIcon from '@mui/icons-material/PersonPinCircle';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
 import PaymentIcon from '@mui/icons-material/Payment';
@@ -111,6 +112,7 @@ export function AppShell() {
           { to: '/digital-card', labelAr: 'البطاقة الرقمية QR', labelEn: 'Digital Pass Card', icon: <QrCode2Icon /> },
           { to: '/subscriptions', labelAr: 'الاشتراكات والباقات', labelEn: 'Subscriptions', icon: <CardMembershipIcon /> },
           { to: '/reservations', labelAr: 'حجوزات المواقف', labelEn: 'Reservations', icon: <BookmarkAddedIcon /> },
+          { to: '/find-slot', labelAr: 'الملاحة إلى خانتي المحجوزة', labelEn: 'Find My Slot', icon: <NearMeIcon />, highlight: true },
           { to: '/guest-invites', labelAr: 'دعوات وتصاريح الزوار', labelEn: 'Guest Invitations', icon: <PersonPinCircleIcon /> },
           { to: '/parking-sessions', labelAr: 'جلسات الوقوف', labelEn: 'Parking Sessions', icon: <TimelineIcon /> },
           { to: '/grace-period', labelAr: 'مراقبة فترات السماح', labelEn: 'Grace Period', icon: <TimerIcon /> },

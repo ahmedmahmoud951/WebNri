@@ -14,6 +14,7 @@ import { DashboardPage } from '../features/dashboard/DashboardPage';
 import { LiveMonitorPage } from '../features/live-monitor/LiveMonitorPage';
 import { FloorMapsPage } from '../features/floor-maps/FloorMapsPage';
 import { FindCarPage } from '../features/find-car/FindCarPage';
+import { FindSlotPage } from '../features/find-slot/FindSlotPage';
 import { VehiclesPage } from '../features/vehicles/VehiclesPage';
 import { SubscriptionsPage } from '../features/subscriptions/SubscriptionsPage';
 import { DigitalCardPage } from '../features/digital-card/DigitalCardPage';
@@ -86,6 +87,7 @@ export const router = createBrowserRouter([
   // Public Access Passes (No login required)
   { path: '/guest-pass', element: <GuestPassPage /> },
   { path: '/invite', element: <GuestPassPage /> },
+  { path: '/slot-guidance', element: <FindSlotPage /> },
 
   // Authenticated Protected App Routes
   {
@@ -102,6 +104,8 @@ export const router = createBrowserRouter([
           { path: '/occupancy', element: <FloorMapsPage /> },
           { path: '/find-my-car', element: <FindCarPage /> },
           { path: '/find-car', element: <FindCarPage /> },
+          { path: '/find-slot', element: <FindSlotPage /> },
+          { path: '/find-my-slot', element: <FindSlotPage /> },
 
           // Client & Resident Features
           { path: '/vehicles', element: <VehiclesPage /> },
