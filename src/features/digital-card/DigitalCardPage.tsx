@@ -62,6 +62,7 @@ import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import TuneIcon from '@mui/icons-material/Tune';
 import ElevatorIcon from '@mui/icons-material/Elevator';
 import CheckIcon from '@mui/icons-material/Check';
+import PublicIcon from '@mui/icons-material/Public';
 
 import { SaudiRealisticPlate } from '../../core/SaudiRealisticPlate';
 import { smartParkingApi, type DigitalCardDto } from '../../core/api/smartParkingApi';
@@ -243,7 +244,112 @@ const INITIAL_GUEST_PASSES: GuestPassItem[] = [
     createdAt: '2026-09-29 18:20',
     qrPayload: 'https://nri.smartparking.local/pass/verify?code=NRI-GST-2026-1184&guest=NouraAlSheikh&slot=G-01&plate=3030SLT',
   },
+  {
+    id: 'pass-04',
+    guestName: 'المهندس كريم محمود حسنين (وفد جمهورية مصر العربية)',
+    phone: '+20 101 234 5678',
+    visitDate: '2026-10-02',
+    startTime: '10:30 صباحاً',
+    endTime: '15:30 مساءً',
+    visitPurpose: 'اجتماع تبادل الخبرات الهندسية وتكامل الأنظمة الذكية',
+    gateName: 'بوابة كبار الشخصيات VIP 03',
+    plateNumber: 'س ي ر 9182',
+    hasVehicle: true,
+    assignedSlot: {
+      id: 'B2-01',
+      floorId: 'B2',
+      floorNameAr: 'القبو الثاني (B2)',
+      slotNumber: 'B2-01',
+      sectionAr: 'المحور الشمالي - صف VIP',
+      type: 'vip',
+      typeNameAr: 'موقف كبار الضيوف VIP',
+      nearGateAr: 'بوابة كبار الشخصيات VIP 03',
+    },
+    inviteCode: 'NRI-GST-2026-9210',
+    status: 'Active',
+    createdAt: '2026-10-01 09:30',
+    qrPayload: 'https://nri.smartparking.local/pass/verify?code=NRI-GST-2026-9210&guest=KarimHassanein&slot=B2-01&plate=9182SYR',
+  },
 ];
+
+export interface CountryCodeItem {
+  id: string;         // Unique id, e.g. 'sa', 'eg'
+  code: string;       // Dial digits e.g. '966', '20'
+  dialCode: string;   // e.g. '+966', '+20'
+  country: string;    // Full Arabic country name
+  countryEn: string;  // English country name
+  flag: string;       // Country Flag emoji
+  placeholder: string;// Example phone format
+}
+
+export const COUNTRY_CODES: CountryCodeItem[] = [
+  // 1. Featured / Priority Focus
+  { id: 'sa', code: '966', dialCode: '+966', country: 'المملكة العربية السعودية', countryEn: 'Saudi Arabia', flag: '🇸🇦', placeholder: '50 123 4567' },
+  { id: 'eg', code: '20', dialCode: '+20', country: 'جمهورية مصر العربية', countryEn: 'Egypt', flag: '🇪🇬', placeholder: '101 234 5678' },
+
+  // 2. GCC Countries (دول مجلس التعاون الخليجي)
+  { id: 'ae', code: '971', dialCode: '+971', country: 'الإمارات العربية المتحدة', countryEn: 'United Arab Emirates', flag: '🇦🇪', placeholder: '50 123 4567' },
+  { id: 'kw', code: '965', dialCode: '+965', country: 'دولة الكويت', countryEn: 'Kuwait', flag: '🇰🇼', placeholder: '5123 4567' },
+  { id: 'qa', code: '974', dialCode: '+974', country: 'دولة قطر', countryEn: 'Qatar', flag: '🇶🇦', placeholder: '3312 3456' },
+  { id: 'bh', code: '973', dialCode: '+973', country: 'مملكة البحرين', countryEn: 'Bahrain', flag: '🇧🇭', placeholder: '3612 3456' },
+  { id: 'om', code: '968', dialCode: '+968', country: 'سلطنة عُمان', countryEn: 'Oman', flag: '🇴🇲', placeholder: '9123 4567' },
+
+  // 3. Arab World (الوطن العربي)
+  { id: 'jo', code: '962', dialCode: '+962', country: 'المملكة الأردنية الهاشمية', countryEn: 'Jordan', flag: '🇯🇴', placeholder: '79 123 4567' },
+  { id: 'iq', code: '964', dialCode: '+964', country: 'جمهورية العراق', countryEn: 'Iraq', flag: '🇮🇶', placeholder: '770 123 4567' },
+  { id: 'lb', code: '961', dialCode: '+961', country: 'الجمهورية اللبنانية', countryEn: 'Lebanon', flag: '🇱🇧', placeholder: '70 123 456' },
+  { id: 'ps', code: '970', dialCode: '+970', country: 'دولة فلسطين', countryEn: 'Palestine', flag: '🇵🇸', placeholder: '59 123 4567' },
+  { id: 'ye', code: '967', dialCode: '+967', country: 'الجمهورية اليمنية', countryEn: 'Yemen', flag: '🇾🇪', placeholder: '771 234 567' },
+  { id: 'sy', code: '963', dialCode: '+963', country: 'الجمهورية العربية السورية', countryEn: 'Syria', flag: '🇸🇾', placeholder: '944 123 456' },
+  { id: 'sd', code: '249', dialCode: '+249', country: 'جمهورية السودان', countryEn: 'Sudan', flag: '🇸🇩', placeholder: '91 234 5678' },
+  { id: 'ly', code: '218', dialCode: '+218', country: 'دولة ليبيا', countryEn: 'Libya', flag: '🇱🇾', placeholder: '91 234 5678' },
+  { id: 'ma', code: '212', dialCode: '+212', country: 'المملكة المغربية', countryEn: 'Morocco', flag: '🇲🇦', placeholder: '612 345 678' },
+  { id: 'tn', code: '216', dialCode: '+216', country: 'الجمهورية التونسية', countryEn: 'Tunisia', flag: '🇹🇳', placeholder: '20 123 456' },
+  { id: 'dz', code: '213', dialCode: '+213', country: 'الجمهورية الجزائرية الديمقراطية', countryEn: 'Algeria', flag: '🇩🇿', placeholder: '551 234 567' },
+  { id: 'mr', code: '222', dialCode: '+222', country: 'الجمهورية الإسلامية الموريتانية', countryEn: 'Mauritania', flag: '🇲🇷', placeholder: '45 12 34 56' },
+  { id: 'so', code: '252', dialCode: '+252', country: 'جمهورية الصومال الفيدرالية', countryEn: 'Somalia', flag: '🇸🇴', placeholder: '61 234 5678' },
+  { id: 'dj', code: '253', dialCode: '+253', country: 'جمهورية جيبوتي', countryEn: 'Djibouti', flag: '🇩🇯', placeholder: '77 12 34 56' },
+  { id: 'km', code: '269', dialCode: '+269', country: 'الاتحاد القمري', countryEn: 'Comoros', flag: '🇰🇲', placeholder: '321 23 45' },
+
+  // 4. Major International Destinations (كافة دول العالم)
+  { id: 'tr', code: '90', dialCode: '+90', country: 'الجمهورية التركية', countryEn: 'Turkey', flag: '🇹🇷', placeholder: '532 123 4567' },
+  { id: 'gb', code: '44', dialCode: '+44', country: 'المملكة المتحدة (بريطانيا)', countryEn: 'United Kingdom', flag: '🇬🇧', placeholder: '7911 123456' },
+  { id: 'us', code: '1', dialCode: '+1', country: 'الولايات المتحدة الأمريكية', countryEn: 'United States', flag: '🇺🇸', placeholder: '202 555 0123' },
+  { id: 'ca', code: '1', dialCode: '+1', country: 'كندا', countryEn: 'Canada', flag: '🇨🇦', placeholder: '416 555 0123' },
+  { id: 'fr', code: '33', dialCode: '+33', country: 'الجمهورية الفرنسية', countryEn: 'France', flag: '🇫🇷', placeholder: '6 12 34 56 78' },
+  { id: 'de', code: '49', dialCode: '+49', country: 'جمهورية ألمانيا الاتحادية', countryEn: 'Germany', flag: '🇩🇪', placeholder: '151 23456789' },
+  { id: 'it', code: '39', dialCode: '+39', country: 'الجمهورية الإيطالية', countryEn: 'Italy', flag: '🇮🇹', placeholder: '320 123 4567' },
+  { id: 'es', code: '34', dialCode: '+34', country: 'مملكة إسبانيا', countryEn: 'Spain', flag: '🇪🇸', placeholder: '612 345 678' },
+  { id: 'nl', code: '31', dialCode: '+31', country: 'مملكة هولندا', countryEn: 'Netherlands', flag: '🇳🇱', placeholder: '6 12345678' },
+  { id: 'ch', code: '41', dialCode: '+41', country: 'الاتحاد السويسري', countryEn: 'Switzerland', flag: '🇨🇭', placeholder: '78 123 45 67' },
+  { id: 'se', code: '46', dialCode: '+46', country: 'مملكة السويد', countryEn: 'Sweden', flag: '🇸🇪', placeholder: '70 123 45 67' },
+  { id: 'be', code: '32', dialCode: '+32', country: 'مملكة بلجيكا', countryEn: 'Belgium', flag: '🇧🇪', placeholder: '470 12 34 56' },
+  { id: 'at', code: '43', dialCode: '+43', country: 'جمهورية النمسا', countryEn: 'Austria', flag: '🇦🇹', placeholder: '664 1234567' },
+  { id: 'gr', code: '30', dialCode: '+30', country: 'الجمهورية الهيلينية (اليونان)', countryEn: 'Greece', flag: '🇬🇷', placeholder: '691 234 5678' },
+  { id: 'ru', code: '7', dialCode: '+7', country: 'روسيا الاتحادية', countryEn: 'Russia', flag: '🇷🇺', placeholder: '912 345-67-89' },
+  { id: 'cn', code: '86', dialCode: '+86', country: 'جمهورية الصين الشعبية', countryEn: 'China', flag: '🇨🇳', placeholder: '138 0013 8000' },
+  { id: 'jp', code: '81', dialCode: '+81', country: 'اليابان', countryEn: 'Japan', flag: '🇯🇵', placeholder: '90 1234 5678' },
+  { id: 'kr', code: '82', dialCode: '+82', country: 'جمهورية كوريا الجنوبية', countryEn: 'South Korea', flag: '🇰🇷', placeholder: '10 1234 5678' },
+  { id: 'in', code: '91', dialCode: '+91', country: 'جمهورية الهند', countryEn: 'India', flag: '🇮🇳', placeholder: '98123 45678' },
+  { id: 'pk', code: '92', dialCode: '+92', country: 'جمهورية باكستان الإسلامية', countryEn: 'Pakistan', flag: '🇵🇰', placeholder: '301 2345678' },
+  { id: 'bd', code: '880', dialCode: '+880', country: 'جمهورية بنغلاديش', countryEn: 'Bangladesh', flag: '🇧🇩', placeholder: '1712 345678' },
+  { id: 'my', code: '60', dialCode: '+60', country: 'ماليزيا', countryEn: 'Malaysia', flag: '🇲🇾', placeholder: '12 345 6789' },
+  { id: 'id', code: '62', dialCode: '+62', country: 'جمهورية إندونيسيا', countryEn: 'Indonesia', flag: '🇮🇩', placeholder: '812 3456 7890' },
+  { id: 'au', code: '61', dialCode: '+61', country: 'كومنولث أستراليا', countryEn: 'Australia', flag: '🇦🇺', placeholder: '412 345 678' },
+  { id: 'br', code: '55', dialCode: '+55', country: 'جمهورية البرازيل الاتحادية', countryEn: 'Brazil', flag: '🇧🇷', placeholder: '11 91234-5678' },
+];
+
+export const QUICK_COUNTRY_SHORTCUTS = [
+  { id: 'sa', label: 'المملكة العربية السعودية', shortLabel: 'السعودية', flag: '🇸🇦', code: '+966' },
+  { id: 'eg', label: 'جمهورية مصر العربية', shortLabel: 'مصر', flag: '🇪🇬', code: '+20' },
+  { id: 'ae', label: 'الإمارات العربية المتحدة', shortLabel: 'الإمارات', flag: '🇦🇪', code: '+971' },
+  { id: 'kw', label: 'دولة الكويت', shortLabel: 'الكويت', flag: '🇰🇼', code: '+965' },
+  { id: 'qa', label: 'دولة قطر', shortLabel: 'قطر', flag: '🇶🇦', code: '+974' },
+  { id: 'bh', label: 'مملكة البحرين', shortLabel: 'البحرين', flag: '🇧🇭', code: '+973' },
+  { id: 'om', label: 'سلطنة عُمان', shortLabel: 'عُمان', flag: '🇴🇲', code: '+968' },
+  { id: 'jo', label: 'المملكة الأردنية', shortLabel: 'الأردن', flag: '🇯🇴', code: '+962' },
+];
+
 
 export function DigitalCardPage() {
   const theme = useTheme();
@@ -276,7 +382,13 @@ export function DigitalCardPage() {
 
   // Form states for creating guest invite
   const [guestName, setGuestName] = useState('');
+  const [selectedCountryId, setSelectedCountryId] = useState<string>('sa');
   const [phone, setPhone] = useState('');
+
+  // Active country details derived from selector
+  const activeCountry = useMemo(() => {
+    return COUNTRY_CODES.find((c) => c.id === selectedCountryId) || COUNTRY_CODES[0];
+  }, [selectedCountryId]);
   const [visitDate, setVisitDate] = useState('2026-10-01');
   const [startTime, setStartTime] = useState('10:00');
   const [endTime, setEndTime] = useState('14:00');
@@ -400,11 +512,23 @@ export function DigitalCardPage() {
       return;
     }
 
+    // Format international phone number cleanly with active country code
+    const trimmedPhone = phone.trim();
+    let formattedPhone = trimmedPhone;
+    if (trimmedPhone.startsWith('+')) {
+      formattedPhone = trimmedPhone;
+    } else if (trimmedPhone.startsWith('00')) {
+      formattedPhone = '+' + trimmedPhone.slice(2);
+    } else {
+      const strippedDigits = trimmedPhone.replace(/^0+/, '');
+      formattedPhone = `+${activeCountry.code} ${strippedDigits}`;
+    }
+
     const newCode = 'NRI-PASS-' + Math.floor(1000 + Math.random() * 9000);
     const newPass: GuestPassItem = {
       id: 'pass-' + Date.now(),
       guestName: guestName.trim(),
-      phone: phone.trim(),
+      phone: formattedPhone,
       visitDate,
       startTime: startTime + ' صباحاً',
       endTime: endTime + ' مساءً',
@@ -445,7 +569,7 @@ export function DigitalCardPage() {
     setSnackbarNotice('تم إصدار تصريح الدخول وحجز الموقف بنجاح تام! يسرنا استعراض التصريح الآن.');
   };
 
-  // WhatsApp share helper
+  // WhatsApp share helper (supports all countries, Egypt, Saudi Arabia, etc.)
   const handleShareWhatsApp = (pass: GuestPassItem) => {
     const text = `*تصريح دخول زائر معتمد - مجمع كايان الذكي* 🏢🚗
 أهلاً بك سعادة الضيف: *${pass.guestName}*
@@ -464,9 +588,21 @@ export function DigitalCardPage() {
 
 نتمنى لكم زيارة موفقة وسعيدة! ✨`;
 
-    const clean = pass.phone.replace(/[^0-9]/g, '');
-    const fullPhone = clean.startsWith('966') ? clean : '966' + clean.replace(/^0+/, '');
-    window.open(`https://api.whatsapp.com/send?phone=${fullPhone}&text=${encodeURIComponent(text)}`, '_blank');
+    let clean = pass.phone.replace(/[^0-9]/g, '');
+    if (clean.startsWith('00')) {
+      clean = clean.slice(2);
+    }
+    if (clean.startsWith('0')) {
+      clean = clean.replace(/^0+/, '');
+    }
+    // Auto-detect Egyptian local mobile (10 digits starting with 10, 11, 12, 15)
+    if (clean.length === 10 && /^(10|11|12|15)/.test(clean)) {
+      clean = '20' + clean;
+    } else if (clean.length === 9 && clean.startsWith('5')) {
+      // Auto-detect Saudi local mobile (9 digits starting with 5)
+      clean = '966' + clean;
+    }
+    window.open(`https://api.whatsapp.com/send?phone=${clean}&text=${encodeURIComponent(text)}`, '_blank');
   };
 
   // Print pass card
@@ -1085,21 +1221,231 @@ export function DigitalCardPage() {
                   }}
                 />
 
-                {/* Guest Phone */}
-                <TextField
-                  label="رقم هاتف / جوال الضيف (واتساب)"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="+966 50 123 4567"
-                  fullWidth
-                  InputProps={{
-                    startAdornment: (
-                      <InputAdornment position="start">
-                        <PhoneIphoneIcon sx={{ color: 'text.secondary' }} />
-                      </InputAdornment>
-                    ),
+                {/* Guest Phone & International Country Code Picker */}
+                <Box
+                  sx={{
+                    p: 2,
+                    borderRadius: 3,
+                    bgcolor: alpha(theme.palette.primary.main, 0.04),
+                    border: `1px solid ${alpha(theme.palette.primary.main, 0.16)}`,
+                    transition: 'all 0.25s ease',
                   }}
-                />
+                >
+                  {/* Header & Quick Country Selectors */}
+                  <Box sx={{ mb: 1.5 }}>
+                    <Stack
+                      direction={{ xs: 'column', sm: 'row' }}
+                      alignItems={{ xs: 'flex-start', sm: 'center' }}
+                      justifyContent="space-between"
+                      spacing={1}
+                      sx={{ mb: 1.2 }}
+                    >
+                      <Typography
+                        variant="caption"
+                        fontWeight={900}
+                        sx={{
+                          color: 'text.secondary',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: 0.75,
+                        }}
+                      >
+                        <PublicIcon sx={{ fontSize: 18, color: theme.palette.primary.main }} />
+                        اختيار دولة الجوال (جميع الدول معتمدة ومصر متاحة لإرسال الواتساب):
+                      </Typography>
+                      <Chip
+                        icon={<WhatsAppIcon sx={{ fontSize: '15px !important', color: '#25D366 !important' }} />}
+                        label={`${activeCountry.flag} ${activeCountry.dialCode} ${activeCountry.countryEn}`}
+                        size="small"
+                        color="success"
+                        variant="outlined"
+                        sx={{ fontWeight: 900, fontSize: 11, direction: 'ltr' }}
+                      />
+                    </Stack>
+
+                    {/* Quick Access Country Shortcuts */}
+                    <Stack
+                      direction="row"
+                      spacing={0.75}
+                      sx={{
+                        overflowX: 'auto',
+                        pb: 0.5,
+                        flexWrap: 'nowrap',
+                        scrollbarWidth: 'thin',
+                        '&::-webkit-scrollbar': { height: 4 },
+                        '&::-webkit-scrollbar-thumb': { bgcolor: alpha(theme.palette.primary.main, 0.2), borderRadius: 2 },
+                      }}
+                    >
+                      {QUICK_COUNTRY_SHORTCUTS.map((item) => {
+                        const isSelected = selectedCountryId === item.id;
+                        return (
+                          <Chip
+                            key={item.id}
+                            label={`${item.flag} ${item.shortLabel} (${item.code})`}
+                            size="small"
+                            onClick={() => setSelectedCountryId(item.id)}
+                            color={isSelected ? 'primary' : 'default'}
+                            variant={isSelected ? 'filled' : 'outlined'}
+                            sx={{
+                              fontWeight: isSelected ? 900 : 700,
+                              cursor: 'pointer',
+                              flexShrink: 0,
+                              transition: 'all 0.2s ease',
+                              bgcolor: isSelected ? undefined : alpha(theme.palette.background.paper, 0.6),
+                              borderColor: isSelected ? undefined : alpha(theme.palette.divider, 0.4),
+                              '&:hover': {
+                                transform: 'translateY(-1px)',
+                                borderColor: theme.palette.primary.main,
+                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.25)}`,
+                              },
+                            }}
+                          />
+                        );
+                      })}
+                    </Stack>
+                  </Box>
+
+                  {/* Dual Grid: Country Dropdown + Phone Input */}
+                  <Grid container spacing={1.5}>
+                    {/* Country Selector Dropdown */}
+                    <Grid item xs={12} sm={5} md={5}>
+                      <TextField
+                        select
+                        fullWidth
+                        label="دولة مفتاح الاتصال"
+                        value={selectedCountryId}
+                        onChange={(e) => setSelectedCountryId(e.target.value)}
+                        SelectProps={{
+                          MenuProps: {
+                            PaperProps: {
+                              sx: {
+                                maxHeight: 380,
+                                borderRadius: 3,
+                                boxShadow: '0 20px 50px rgba(0,0,0,0.3)',
+                              },
+                            },
+                          },
+                        }}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Typography sx={{ fontSize: 20, lineHeight: 1 }}>{activeCountry.flag}</Typography>
+                            </InputAdornment>
+                          ),
+                        }}
+                      >
+                        {COUNTRY_CODES.map((c) => (
+                          <MenuItem
+                            key={c.id}
+                            value={c.id}
+                            sx={{
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'space-between',
+                              py: 1.2,
+                              gap: 1.5,
+                            }}
+                          >
+                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.2 }}>
+                              <Typography sx={{ fontSize: 22, lineHeight: 1 }}>{c.flag}</Typography>
+                              <Box>
+                                <Typography variant="body2" fontWeight={800} sx={{ lineHeight: 1.2 }}>
+                                  {c.country}
+                                </Typography>
+                                <Typography variant="caption" color="text.secondary" sx={{ fontSize: 11 }}>
+                                  {c.countryEn}
+                                </Typography>
+                              </Box>
+                            </Box>
+                            <Chip
+                              label={c.dialCode}
+                              size="small"
+                              sx={{
+                                fontWeight: 900,
+                                fontSize: 11,
+                                bgcolor: alpha(theme.palette.primary.main, 0.12),
+                                color: theme.palette.primary.main,
+                                direction: 'ltr',
+                              }}
+                            />
+                          </MenuItem>
+                        ))}
+                      </TextField>
+                    </Grid>
+
+                    {/* Guest Phone Input */}
+                    <Grid item xs={12} sm={7} md={7}>
+                      <TextField
+                        label="رقم هاتف / جوال الضيف (واتساب)"
+                        type="tel"
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        placeholder={`مثال: ${activeCountry.placeholder}`}
+                        fullWidth
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <Box
+                                sx={{
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: 0.5,
+                                  px: 1,
+                                  py: 0.4,
+                                  borderRadius: 1.5,
+                                  bgcolor: alpha(theme.palette.success.main, 0.12),
+                                  border: `1px solid ${alpha(theme.palette.success.main, 0.3)}`,
+                                }}
+                              >
+                                <Typography sx={{ fontSize: 14 }}>{activeCountry.flag}</Typography>
+                                <Typography
+                                  variant="caption"
+                                  fontWeight={900}
+                                  sx={{ color: theme.palette.success.main, direction: 'ltr' }}
+                                >
+                                  {activeCountry.dialCode}
+                                </Typography>
+                              </Box>
+                            </InputAdornment>
+                          ),
+                          endAdornment: (
+                            <InputAdornment position="end">
+                              <Tooltip title="سيتم إرسال التصريح مباشرة عبر تطبيق WhatsApp إلى هذا الرقم">
+                                <IconButton edge="end" sx={{ color: '#25D366' }}>
+                                  <WhatsAppIcon />
+                                </IconButton>
+                              </Tooltip>
+                            </InputAdornment>
+                          ),
+                        }}
+                        helperText={
+                          <Typography
+                            component="span"
+                            variant="caption"
+                            sx={{
+                              color: phone ? 'success.main' : 'text.secondary',
+                              fontWeight: 700,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: 0.5,
+                              mt: 0.3,
+                            }}
+                          >
+                            💬 إرسال الواتساب إلى:{' '}
+                            <Box
+                              component="span"
+                              sx={{ direction: 'ltr', display: 'inline-block', fontWeight: 900 }}
+                            >
+                              +{activeCountry.code}{' '}
+                              {phone ? phone.trim().replace(/^0+/, '') : activeCountry.placeholder}
+                            </Box>
+                          </Typography>
+                        }
+                      />
+                    </Grid>
+                  </Grid>
+                </Box>
+
 
                 {/* Visit Date & Time Windows */}
                 <Grid container spacing={2}>
@@ -1780,7 +2126,28 @@ export function DigitalCardPage() {
                             {pass.visitDate} • من {pass.startTime} إلى {pass.endTime}
                           </Typography>
                         </Grid>
+                        <Grid item xs={12}>
+                          <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ pt: 0.75, borderTop: `1px dashed ${alpha(theme.palette.divider, 0.4)}` }}>
+                            <Typography variant="caption" color="text.secondary" fontWeight={700}>
+                              رقم جوال الضيف (واتساب)
+                            </Typography>
+                            <Chip
+                              icon={<WhatsAppIcon sx={{ fontSize: '14px !important', color: '#25D366 !important' }} />}
+                              label={pass.phone}
+                              size="small"
+                              variant="outlined"
+                              sx={{
+                                fontWeight: 800,
+                                fontSize: 11,
+                                direction: 'ltr',
+                                borderColor: alpha(theme.palette.success.main, 0.4),
+                                bgcolor: alpha(theme.palette.success.main, 0.06),
+                              }}
+                            />
+                          </Stack>
+                        </Grid>
                       </Grid>
+
                     </Paper>
 
                     {/* Pass Action Buttons */}
@@ -1973,7 +2340,16 @@ export function DigitalCardPage() {
                         {viewPassModal.visitPurpose}
                       </Typography>
                     </Grid>
+                    <Grid item xs={12}>
+                      <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.6)' }}>
+                        رقم هاتف الضيف المعتمد (WhatsApp)
+                      </Typography>
+                      <Typography variant="body2" fontWeight={800} sx={{ color: '#34D399', direction: 'ltr', textAlign: 'right' }}>
+                        {viewPassModal.phone} 💬
+                      </Typography>
+                    </Grid>
                   </Grid>
+
                 </Paper>
 
                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', display: 'block', mt: 2 }}>
