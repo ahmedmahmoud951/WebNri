@@ -129,3 +129,64 @@ canvas {
     animation: none !important;
   }
 }
+
+/* ========================================================================= */
+/* LPR REAL-TIME CAPTURES CYBER SCROLLBAR & GLOW STYLING                     */
+/* ========================================================================= */
+.lpr-cyber-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #00F0FF rgba(11, 18, 32, 0.7);
+}
+
+.lpr-cyber-scroll::-webkit-scrollbar {
+  width: 7px;
+  height: 7px;
+}
+
+.lpr-cyber-scroll::-webkit-scrollbar-track {
+  background: rgba(11, 18, 32, 0.75);
+  border-radius: 10px;
+  border: 1px solid rgba(56, 189, 248, 0.15);
+  margin: 4px 0;
+}
+
+.lpr-cyber-scroll::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #00F0FF 0%, #38BDF8 50%, #0284C7 100%);
+  border-radius: 10px;
+  box-shadow: 0 0 12px rgba(0, 240, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 250ms ease;
+}
+
+.lpr-cyber-scroll::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #38BDF8 0%, #00F0FF 100%);
+  box-shadow: 0 0 18px rgba(0, 240, 255, 0.95);
+}
+
+/* ========================================================================= */
+/* DIGITAL PASS CARD PRINT OPTIMIZATION                                      */
+/* ========================================================================= */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #printable-guest-pass,
+  #printable-guest-pass * {
+    visibility: visible !important;
+  }
+  #printable-guest-pass {
+    position: fixed !important;
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    width: 90% !important;
+    max-width: 550px !important;
+    margin: 0 auto !important;
+    box-shadow: none !important;
+    border: 2px solid #0D9488 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+}
+
+

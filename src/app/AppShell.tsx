@@ -95,7 +95,7 @@ export function AppShell() {
         id: 'command',
         title: isEn ? 'CONTROL & REALTIME' : '🚀 القيادة والعمليات الحية',
         items: [
-          { to: '/dashboard', labelAr: 'لوحة القيادة التنفيذية', labelEn: 'Executive Dashboard', icon: <DashboardIcon /> },
+          { to: '/dashboard', labelAr: 'مركز التحكم والقيادة التنفيذي', labelEn: 'Executive Mission Control', icon: <DashboardIcon />, highlight: true },
           { to: '/live-monitor', labelAr: 'المراقبة اللحظية LPR', labelEn: 'Live Monitor', icon: <VideocamIcon /> },
           { to: '/floor-maps', labelAr: 'خريطة الأدوار التفاعلية', labelEn: 'Interactive Floor Maps', icon: <MapIcon /> },
           { to: '/find-my-car', labelAr: 'أين سيارتي والملاحة', labelEn: 'Find My Car', icon: <LocationSearchingIcon /> },
@@ -135,7 +135,6 @@ export function AppShell() {
           { to: '/gates', labelAr: 'البوابات الذكية', labelEn: 'Smart Gates', icon: <MeetingRoomIcon /> },
           { to: '/lpr', labelAr: 'محرك التعرف LPR', labelEn: 'LPR Recognition Hub', icon: <CameraAltIcon /> },
           { to: '/system-health', labelAr: 'تشخيص وصحة النظام', labelEn: 'System Health', icon: <HealthAndSafetyIcon /> },
-          { to: '/simulation-suite', labelAr: 'مركز العمليات والمحاكاة الذكية', labelEn: 'Operations & Simulation Suite', icon: <PlayCircleOutlineIcon />, highlight: true },
         ],
       },
       {
@@ -271,24 +270,6 @@ export function AppShell() {
 
           {/* Right Toolbar Actions */}
           <Stack direction="row" spacing={1.25} alignItems="center">
-            {/* Quick Operations Simulator CTA */}
-            <Button
-              size="small"
-              variant="contained"
-              color="secondary"
-              startIcon={<PlayCircleOutlineIcon />}
-              onClick={() => navigate('/simulation-suite')}
-              sx={{
-                fontWeight: 800,
-                display: { xs: 'none', sm: 'inline-flex' },
-                background: 'linear-gradient(135deg, #0284C7, #00F0FF)',
-                color: '#080D1A',
-                boxShadow: '0 4px 16px rgba(0, 240, 255, 0.35)',
-              }}
-            >
-              {!isEn ? 'محاكي العمليات الذكية' : 'Operations Suite'}
-            </Button>
-
             {/* Dark / Light Theme Toggle */}
             <Tooltip title={mode === 'dark' ? 'الوضع النهاري (Light Mode)' : 'الوضع الليلي (Dark Mode)'}>
               <IconButton onClick={toggleMode} color="inherit" size="small">

@@ -492,8 +492,8 @@ export const smartParkingApi = {
       console.warn('Failed to load floors from API, using fallback:', e);
     }
     return [
-      { id: '33333333-3333-3333-2221-000000000001', name: 'القبو الثاني (B2)', floorNumber: -2, capacity: 80, buildingId },
-      { id: '33333333-3333-3333-2221-000000000002', name: 'القبو الأول (B1)', floorNumber: -1, capacity: 70, buildingId },
+      { id: '33333333-3333-3333-2221-000000000001', name: 'المستوى السفلي الثاني (B2)', floorNumber: -2, capacity: 80, buildingId },
+      { id: '33333333-3333-3333-2221-000000000002', name: 'المستوى السفلي الأول (B1)', floorNumber: -1, capacity: 70, buildingId },
       { id: '33333333-3333-3333-2221-000000000003', name: 'الدور الأرضي (G)', floorNumber: 0, capacity: 50, buildingId },
     ];
   },
@@ -741,7 +741,7 @@ export const smartParkingApi = {
       carModel = 'Mercedes-Benz S-500';
       carColor = 'فضي معدني';
       spotCode = 'B-208';
-      floorName = 'القبو الأول (Basement B1)';
+      floorName = 'المستوى السفلي الأول (B1)';
     } else if (cleanPlate.includes('4490') || cleanPlate.includes('ر ز ط')) {
       arabicLetters = 'ر ز ط';
       digits = '4490';

@@ -1279,10 +1279,10 @@ export function FreePlacesPage() {
                 >
                   <Stack spacing={0.5}>
                     <Typography variant="body2" fontWeight={700} sx={{ color: '#3b82f6' }}>
-                      🚗 محاكي البوابات وإدارة الجلسات
+                      🚗 إدارة الجلسات وحركة السيارات
                     </Typography>
                     <Typography variant="caption" color="text.secondary">
-                      إنهاء الجلسات العالقة للسيارات أو تصفير حركة المحاكي.
+                      متابعة وإنهاء الجلسات الحالية للسيارات في هذا الموقف.
                     </Typography>
                   </Stack>
                   <Button
@@ -1290,11 +1290,11 @@ export function FreePlacesPage() {
                     size="small"
                     color="primary"
                     component={RouterLink}
-                    to="/admin/simulator"
+                    to="/parking-sessions"
                     onClick={() => setDependencyModal(null)}
                     sx={{ whiteSpace: 'nowrap', fontWeight: 700 }}
                   >
-                    الانتقال للمحاكي ↗
+                    الانتقال للجلسات ↗
                   </Button>
                 </Box>
 

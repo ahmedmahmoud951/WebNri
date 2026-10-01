@@ -5,6 +5,7 @@ import https from 'node:https';
 import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react';
 import { lanCameraProxyPlugin } from './vite-plugins/lanCameraProxy';
+import { alarmsResiliencePlugin } from './vite-plugins/alarmsResiliencePlugin';
 
 const rootDir = path.dirname(fileURLToPath(import.meta.url));
 
@@ -78,7 +79,7 @@ export default defineConfig(({ mode }) => {
   console.log(`\x1b[35m[Vite Proxy Target]\x1b[0m Forwarding /api to: \x1b[33m${apiTarget}\x1b[0m`);
 
   return {
-    plugins: [react(), lanCameraProxyPlugin()],
+    plugins: [react(), lanCameraProxyPlugin(), alarmsResiliencePlugin()],
     resolve: {
       alias: {
         '@': path.resolve(rootDir, 'src'),
@@ -87,7 +88,7 @@ export default defineConfig(({ mode }) => {
     server: {
       host: '127.0.0.1',
       port: 5173,
-      strictPort: true,
+      strictPort: false,
       open: true,
       proxy: {
         '/api': proxyWithLog(apiTarget),

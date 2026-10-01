@@ -76,7 +76,7 @@ export const ICON_CATALOG: Record<string, IconDef> = {
     id: 'find',
     glyph: Glyphs.find,
     tone: 'violet',
-    nameAr: 'لاقي عربيتي',
+    nameAr: 'العثور على المركبة',
     nameEn: 'Find My Car',
     descAr: 'موقع المركبة داخل المبنى',
     descEn: 'Vehicle location inside the building',
