@@ -26,21 +26,16 @@ import Visibility from '@mui/icons-material/Visibility';
 import VisibilityOff from '@mui/icons-material/VisibilityOff';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
-import SecurityIcon from '@mui/icons-material/Security';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import PersonOutlineIcon from '@mui/icons-material/PersonOutline';
-import VerifiedUserIcon from '@mui/icons-material/VerifiedUser';
 import ShieldIcon from '@mui/icons-material/Shield';
 import DirectionsCarIcon from '@mui/icons-material/DirectionsCar';
 import LocationSearchingIcon from '@mui/icons-material/LocationSearching';
 import SpeedIcon from '@mui/icons-material/Speed';
 import AccountBalanceWalletIcon from '@mui/icons-material/AccountBalanceWallet';
-import BoltIcon from '@mui/icons-material/Bolt';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
-import MemoryIcon from '@mui/icons-material/Memory';
-import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import SensorDoorIcon from '@mui/icons-material/SensorDoor';
 import GppGoodIcon from '@mui/icons-material/GppGood';
+import LocalParkingIcon from '@mui/icons-material/LocalParking';
 
 import { ApiError } from '../../core/api/errors';
 import { useAuth } from '../../core/auth/authContext';
@@ -55,19 +50,12 @@ export function LoginPage() {
   const { mode, toggleMode } = useThemeMode();
   const isDark = mode === 'dark';
 
-  const [username, setUsername] = useState('admin');
-  const [password, setPassword] = useState('admin');
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-
-  // Quick Preset Credential Selector for seamless evaluation and demo
-  const selectPreset = (u: string, p: string) => {
-    setUsername(u);
-    setPassword(p);
-    setError(null);
-  };
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -133,10 +121,6 @@ export function LoginPage() {
         @keyframes livePulseDot {
           0%, 100% { opacity: 1; transform: scale(1); }
           50% { opacity: 0.3; transform: scale(1.4); }
-        }
-        @keyframes scanlineAnim {
-          0% { transform: translateY(-100%); }
-          100% { transform: translateY(1000%); }
         }
       `}</style>
 
@@ -264,12 +248,12 @@ export function LoginPage() {
           zIndex: 10,
         }}
       >
-        {/* 1. Brand Lockup & Ecosystem Identity */}
+        {/* 1. Brand Lockup & NRI Parking Identity */}
         <Stack direction="row" spacing={2.5} alignItems="center">
           <Box
             sx={{
-              width: 62,
-              height: 62,
+              width: 64,
+              height: 64,
               borderRadius: '20px',
               background: 'linear-gradient(135deg, #0284C7 0%, #00F0FF 100%)',
               display: 'flex',
@@ -280,7 +264,7 @@ export function LoginPage() {
               position: 'relative',
             }}
           >
-            <ShieldIcon sx={{ fontSize: 38 }} />
+            <LocalParkingIcon sx={{ fontSize: 40 }} />
             {/* Holographic Glowing Border Ring */}
             <Box
               sx={{
@@ -299,7 +283,7 @@ export function LoginPage() {
                 fontFamily: 'Sora, Cairo, sans-serif',
                 fontWeight: 900,
                 letterSpacing: 0.5,
-                fontSize: 27,
+                fontSize: 28,
                 background: isDark
                   ? 'linear-gradient(135deg, #FFFFFF 15%, #38BDF8 60%, #00F0FF 100%)'
                   : 'linear-gradient(135deg, #0F172A 15%, #0284C7 60%, #00B4D8 100%)',
@@ -307,7 +291,7 @@ export function LoginPage() {
                 WebkitTextFillColor: 'transparent',
               }}
             >
-              منظومة أنفاق الذكية
+              منظومة NRI Parking الذكية
             </Typography>
             <Typography
               variant="caption"
@@ -316,10 +300,10 @@ export function LoginPage() {
                 fontWeight: 900,
                 letterSpacing: 1.2,
                 display: 'block',
-                fontSize: 11.5,
+                fontSize: 12,
               }}
             >
-              ANFAQ SMART PARKING & ACCESS ECOSYSTEM
+              NRI PARKING & SMART MOBILITY ECOSYSTEM
             </Typography>
           </Box>
         </Stack>
@@ -329,7 +313,7 @@ export function LoginPage() {
           {/* NCA Cybersecurity Certification Chip */}
           <Chip
             icon={<CheckCircleIcon sx={{ fontSize: 16, color: '#10B981 !important' }} />}
-            label="بوابة موحدة معتمدة للتحكم الذكي • مطابقة لمعايير الأمن السيبراني NCA"
+            label="المنصة التشغيلية الموحدة لإدارة المواقف الذكية • مطابقة لمعايير الأمن السيبراني NCA"
             sx={{
               mb: 3,
               py: 0.8,
@@ -358,7 +342,7 @@ export function LoginPage() {
               WebkitTextFillColor: 'transparent',
             }}
           >
-            الجيل الجديد لإدارة وتأمين مواقف المستقبل
+            الريادة الرقمية في إدارة وتشغيل مواقف المستقبل
           </Typography>
 
           <Typography
@@ -371,7 +355,7 @@ export function LoginPage() {
               fontWeight: 600,
             }}
           >
-            نظام تشغيلي متكامل يربط تقنيات الذكاء الاصطناعي لرصد لوحات المركبات (LPR)، الحواجز الكهروميكانيكية، الملاحة الداخلية، وبوابات الدفع الوطنية الفورية.
+
           </Typography>
 
           {/* 3. The 4 Requested Iconic Feature Cards */}
@@ -656,8 +640,8 @@ export function LoginPage() {
           <Stack direction="row" spacing={1.5} alignItems="center" justifyContent="center" sx={{ mb: 1 }}>
             <Box
               sx={{
-                width: 42,
-                height: 42,
+                width: 44,
+                height: 44,
                 borderRadius: '14px',
                 background: 'linear-gradient(135deg, #0284C7, #00F0FF)',
                 display: 'flex',
@@ -666,15 +650,15 @@ export function LoginPage() {
                 color: '#050A14',
               }}
             >
-              <ShieldIcon sx={{ fontSize: 26 }} />
+              <LocalParkingIcon sx={{ fontSize: 28 }} />
             </Box>
             <Typography variant="h5" fontWeight={900}>
-              منظومة أنفاق الذكية
+              NRI Parking — المواقف الذكية
             </Typography>
           </Stack>
           <Chip
             icon={<CheckCircleIcon sx={{ fontSize: 14, color: '#10B981 !important' }} />}
-            label="مطابقة لمعايير الأمن السيبراني NCA"
+            label="المنصة التشغيلية المعتمدة • معايير NCA"
             size="small"
             sx={{ fontWeight: 800, bgcolor: 'rgba(16, 185, 129, 0.12)', color: '#10B981', border: '1px solid rgba(16, 185, 129, 0.3)' }}
           />
@@ -715,62 +699,11 @@ export function LoginPage() {
               <LockOutlinedIcon sx={{ fontSize: 32 }} />
             </Box>
             <Typography variant="h4" fontWeight={900} sx={{ letterSpacing: -0.5, mb: 0.8 }}>
-              تسجيل الدخول للمنظومة
+              تسجيل الدخول إلى NRI Parking
             </Typography>
             <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 700, lineHeight: 1.6 }}>
               بوابة الوصول المعتمدة للتحكم الذكي وإدارة العمليات التنفيذية
             </Typography>
-          </Box>
-
-          {/* Quick Demo Credentials Presets */}
-          <Box sx={{ mb: 3 }}>
-            <Typography variant="caption" sx={{ color: 'text.secondary', fontWeight: 800, display: 'block', mb: 1, textAlign: 'center' }}>
-              ⚡ حسابات الوصول السريع التجريبية (اضغط للتعبئة الفورية):
-            </Typography>
-            <Stack direction="row" spacing={1} justifyContent="center" flexWrap="wrap">
-              <Chip
-                label="👑 المشرف العام (Admin)"
-                clickable
-                size="small"
-                onClick={() => selectPreset('admin', 'admin')}
-                sx={{
-                  fontWeight: 900,
-                  fontSize: 11,
-                  bgcolor: username === 'admin' ? alpha(theme.palette.primary.main, 0.2) : 'transparent',
-                  borderColor: theme.palette.primary.main,
-                  border: '1px solid',
-                  color: username === 'admin' ? theme.palette.primary.main : 'text.primary',
-                }}
-              />
-              <Chip
-                label="🛡 مشغل البوابات"
-                clickable
-                size="small"
-                onClick={() => selectPreset('operator', 'operator123')}
-                sx={{
-                  fontWeight: 800,
-                  fontSize: 11,
-                  bgcolor: username === 'operator' ? alpha('#10B981', 0.2) : 'transparent',
-                  borderColor: '#10B981',
-                  border: '1px solid',
-                  color: username === 'operator' ? '#10B981' : 'text.primary',
-                }}
-              />
-              <Chip
-                label="🔍 مراقب الأمان"
-                clickable
-                size="small"
-                onClick={() => selectPreset('security', 'security123')}
-                sx={{
-                  fontWeight: 800,
-                  fontSize: 11,
-                  bgcolor: username === 'security' ? alpha('#F59E0B', 0.2) : 'transparent',
-                  borderColor: '#F59E0B',
-                  border: '1px solid',
-                  color: username === 'security' ? '#F59E0B' : 'text.primary',
-                }}
-              />
-            </Stack>
           </Box>
 
           {/* Form */}
@@ -794,10 +727,10 @@ export function LoginPage() {
               {/* Username Input with Glowing Focus */}
               <Box>
                 <Typography variant="caption" fontWeight={800} color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  اسم المستخدم أو البريد الإلكتروني المعتمد:
+                  اسم المستخدم أو البريد الإلكتروني:
                 </Typography>
                 <TextField
-                  placeholder="admin"
+                  placeholder="أدخل اسم المستخدم أو البريد..."
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   autoComplete="username"
@@ -960,7 +893,7 @@ export function LoginPage() {
                   },
                 }}
               >
-                {submitting ? 'جاري التحقق والاتصال الآمن...' : 'دخول منظومة أنفاق الذكية 🚀'}
+                {submitting ? 'جاري التحقق والاتصال الآمن...' : 'دخول منظومة NRI Parking 🚀'}
               </Button>
 
               <Divider sx={{ borderColor: 'rgba(56, 189, 248, 0.15)', my: 0.5 }}>
